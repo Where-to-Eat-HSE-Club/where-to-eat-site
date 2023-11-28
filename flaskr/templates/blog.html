@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='/images/favicon.ico') }}">
+    <script src="../static/javascript/insertHeaderFooter.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="../static/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="../static/css/blog.css" />
+
+    <title>Где Поесть? Блог</title>
+</head>
+<body>
+    <div class="blog-body">
+        <div class="blog-header">
+            Блоги
+        </div>
+        <div class="posts">
+            {% for post in posts %}
+                {% autoescape false %}
+                    <div class="post">
+                        <h1> {{ post['name'] }} - {{ post['place_name'] }} by {{ post['author'] }} </h1>
+                        <h3> {{ post['body_text'] }} </h3>
+                    </div>
+
+                {% endautoescape %}
+            {% endfor %}
+
+        </div>
+    </div>
+</body>
+</html>

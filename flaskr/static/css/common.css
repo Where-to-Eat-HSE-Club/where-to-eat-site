@@ -1,0 +1,71 @@
+@font-face {
+    font-family: 'CirceBold';
+    src: url('../fonts/Circe-Bold.otf'), url('../fonts/Circe-ExtraBold.otf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+}
+.header {
+    background-color: #FEBB0C;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: gainsboro;
+    margin: 0;
+    padding: 20px;
+
+    color: black;
+    font-family: "Arial", serif;
+    font-size: 16px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+}
+
+img {
+    width: 64px;
+    height: auto;
+    padding: 5px;
+}
+
+.nav-button {
+    color: black;
+    font-family: "CirceBold", serif;
+    font-size: 36px;
+    padding: 10px;
+}
+
+.nav-button:hover {
+    background-color: #d79d08;
+}
+
+.no-decoration {
+    text-decoration: none;
+    display: inline-block;
+    margin: 0 5px;
+}

@@ -1,0 +1,10 @@
+.index-body {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-family: "Comic Sans MS", sans-serif;
+
+    font-size: 64px;
+}

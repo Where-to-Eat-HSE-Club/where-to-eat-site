@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+    <script src="https://unpkg.com/htmx.org@1.9.9" integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX" crossorigin="anonymous"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='/images/favicon.ico') }}">
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="../static/javascript/insertHeaderFooter.js" defer></script>
+
+    <script src="https://api-maps.yandex.ru/v3/?apikey=89716fda-109b-4fc7-b077-5cb9d24154f2&lang=ru_RU" type="text/javascript"></script>
+    <script src="../static/javascript/map.js"></script>
+
+    <script>
+        init()
+
+    </script>
+    <link rel="stylesheet" type="text/css" href="../static/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="../static/css/map.css" />
+
+
+
+    <title>Где Поесть? Яндекс карта</title>
+</head>
+<body>
+    <div class="map-header">
+    </div>
+    <div class="map-body">
+
+        <div id="map"></div>
+
+        <div class="side-panel">
+            <div class="side-panel-header">
+                Кликните по любому ресторану, чтобы открыть информацию о нём.
+            </div>
+            <div class="side-panel-body">
+{#                <div class='official-review' hx-swap="innerHTML" hx-trigger="load changed">#}
+{#                </div>#}
+                <div class="reviews">
+                    <div class="review-item">
+                      <span class="review-rating">4.5</span>
+                      <span>Very good - Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+                    </div>
+
+                    <div class="review-item">
+                      <span class="review-rating">3.8</span>
+                      <span>Decent - Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script defer>
+        console.log("Adding events")
+
+        document.body.addEventListener('htmx:load', function (evt) {
+            htmx.logAll();
+            console.log("htmx logging enabled")
+        });
+
+        document.body.addEventListener('updateBodyListeners', function (evt) {
+            htmx.process(document.body)
+            console.log("updateBodyListeners fired")
+        });
+    </script>
+</body>
+</html>
