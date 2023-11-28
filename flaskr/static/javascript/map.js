@@ -1,22 +1,51 @@
+// Event for telling HTMX to rebuild all events. (Called after modifying HTML DOM from JS)
 const updateBodyListenersEvent = new Event("updateBodyListeners");
 
+/**
+ * Use for delaying some code execution. Usage:
+ *
+ * sleep(1000).then (() => {alert("this code will be executed after 1 second")})
+ * @param {number} ms milliseconds to delay
+ */
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+/**
+ * Reflow (recompose) given html element. Used for redrawing elements after css change.
+ * Doesn't work with flex changes for some reason.
+ *
+ * @param {HTMLElement} elt
+ */
 function reflow(elt){
     console.log(elt.offsetHeight);
 }
 
-function prepareCoordinates(coordinates) {
-    offset = 4 // offset all markers by 4 meters up and left
+/**
+ * Given latitude and longitude, move the gps point by offset meters up and left.
+ *
+ * Returns latitude and longitude swapped places because Yandex API messed the order up, duh
+ * @param {[number, number]} coordinates
+ * @param {number} offset
+ *
+ * @return {[number, number]}
+ */
+function prepareCoordinates(coordinates, offset= 4) {
     y = coordinates[0]
     x = coordinates[1]
     y += offset / 111111
     x -= offset / (111111 * Math.cos(y * Math.PI / 180))
 
+    // See https://stackoverflow.com/questions/7477003/calculating-new-longitude-latitude-from-old-n-meters
+
     return [x, y]
 }
 
+/**
+ * Fetch all lyceum buildings' coordinates and names from flask endpoint
+ *
+ * Returns all lyceums in a list like [{"coordinates": [55.752318, 37.637371], "name": "Лицей на Солянке"}]
+ */
 async function getLyceumBuildings() {
     console.log("Requesting lyceum buildings")
     const response = await fetch("/lyceum_buildings");
@@ -26,6 +55,12 @@ async function getLyceumBuildings() {
 
     return lyceumBuildingsData
 }
+
+/**
+ * Fetch all diners' data from flask endpoint
+ *
+ * Returns all diners in a list like [{"id": 0, "name": "Cofix", "position": [55.754005, 37.636823], "reviewed": False}]
+ */
 async function getDiners() {
     console.log("Requesting diners")
 
@@ -37,14 +72,24 @@ async function getDiners() {
     return dinersData
 }
 
+/**
+ * Clear all contents of side panel and set header to "please select a new restaurant"
+ */
 function clearDinerSidePanel() {
     let sidePanelHeader = document.querySelector(".side-panel-header")
-    sidePanelHeader.textContent = ""
+    sidePanelHeader.textContent = "Кликните по любому ресторану, чтобы открыть информацию о нём."
 
     let sidePanelBody = document.querySelector(".side-panel-body")
     sidePanelBody.innerHTML = ""
 }
 
+/**
+ *
+ * @param id
+ * @param dinerName
+ * @param position
+ * @param reviewed
+ */
 function fillDinerSidePanel(id, dinerName, position, reviewed) {
     clearDinerSidePanel()
     console.log(`Filled side panel with ${dinerName}`)
@@ -71,12 +116,25 @@ function fillDinerSidePanel(id, dinerName, position, reviewed) {
     console.log("appended child " + officialReview)
 }
 
+/**
+ * Map click event handler.
+ *
+ * - If the user clicked not on the marker, close currently opened diner's information on the side panel.
+ *
+ * @param eventType
+ */
 function onMapClick(eventType) {
-    if (eventType === "hotspot") {
+    console.log(eventType)
+    if (eventType !== "marker") {
         clearDinerSidePanel()
     }
 }
 
+/**
+ * Import all classes from Yandex Maps JS API and return them.
+ *
+ * @return {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer, YMapDefaultMarker, YMapZoomControl}
+ */
 async function initYMapModules() {
     console.log("map loading")
     await ymaps3.ready;
@@ -89,6 +147,18 @@ async function initYMapModules() {
     return {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer, YMapDefaultMarker, YMapZoomControl}
 }
 
+/**
+ * Create a map, setup all settings (camera location, map controls, layers and event listeners) and return it.
+ *
+ * @param YMap
+ * @param YMapDefaultSchemeLayer
+ * @param YMapControls
+ * @param YMapZoomControl
+ * @param YMapDefaultFeaturesLayer
+ * @param YMapListener
+ *
+ * @return YMap
+ */
 async function setupMap(YMap, YMapDefaultSchemeLayer, YMapControls, YMapZoomControl, YMapDefaultFeaturesLayer, YMapListener) {
     const map = new YMap(document.getElementById("map"), {
         location: {
@@ -104,7 +174,7 @@ async function setupMap(YMap, YMapDefaultSchemeLayer, YMapControls, YMapZoomCont
     const mapListener = new YMapListener({
         layer: 'any',
         // Добавление обработчиков на слушатель.
-        onClick: ({type, camera, location}) => {onMapClick(type)},
+        onClick: ({type}) => {onMapClick(type)}, // FIXME 80% of clicks throw errors
         // onMouseMove: mouseMoveCallback
     });
 
@@ -112,6 +182,13 @@ async function setupMap(YMap, YMapDefaultSchemeLayer, YMapControls, YMapZoomCont
     return map
 }
 
+
+/**
+ * Add all lyceum buildings markers to the map.
+ *
+ * @param map
+ * @param YMapMarker
+ */
 async function setupLyceumBuildings(map, YMapMarker) {
     getLyceumBuildings().then((lyceumBuildingsData) => {
         if (lyceumBuildingsData != null) {
@@ -143,19 +220,24 @@ async function setupLyceumBuildings(map, YMapMarker) {
     })
 }
 
+/**
+ * Add all diners markers to the map.
+ *
+ * @param map
+ * @param YMapMarker
+ * @return {Promise<void>}
+ */
 async function setupDiners(map, YMapMarker) {
     getDiners().then((dinersData) => {
         for (let diner of dinersData) {
             let id = diner.id
             let name = diner.name
             let position = diner.position
-            let avg = diner.average_rating
             let reviewed = diner.reviewed
-            let reviews = diner.reviews
 
             let markerElement = document.createElement("div")
             let markerIcon = document.createElement("img")
-            // markerIcon.className = "diner-image"
+
             if (reviewed){
                 markerIcon.src = "/static/images/restaurant_colored.png"
             } else {
@@ -178,6 +260,9 @@ async function setupDiners(map, YMapMarker) {
     })
 }
 
+/**
+ * Function called on start, inits the map and places lyceum buildings and diners markers on the map.
+ */
 async function init(){
     let {
         YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls,
