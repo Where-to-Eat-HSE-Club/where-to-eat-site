@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index_page():
-    return "Hi there hello!"
+    return "Just changing text"
 
 
 if __name__ == "__main__":
