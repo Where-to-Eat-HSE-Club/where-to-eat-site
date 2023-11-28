@@ -19,20 +19,11 @@ jobs:
         source: "."
         target: "/root/where-to-eat-site"
 
-#    - name: Restart systemctl flask process
-#      uses: appleboy/ssh-action@master
-#      with:
-#        host: ${{ secrets.HOST }}
-#        USERNAME: ${{ secrets.USERNAME }}
-#        PORT: ${{ secrets.PORT }}
-#        KEY: ${{ secrets.SSHKEY }}
-#        script: systemctl restart where-to-
-#
-#    - name: Running flask app
-#      uses: appleboy/ssh-action@master
-#      with:
-#        host: ${{ secrets.HOST }}
-#        USERNAME: ${{ secrets.USERNAME }}
-#        PORT: ${{ secrets.PORT }}
-#        KEY: ${{ secrets.SSHKEY }}
-#        script: python /root/where-to-eat-site/main.py
+    - name: Restart wsgi flask service
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+        script: systemctl restart where-to-eat-site-server.service
