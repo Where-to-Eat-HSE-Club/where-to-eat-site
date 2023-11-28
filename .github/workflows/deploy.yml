@@ -35,4 +35,4 @@ jobs:
         USERNAME: ${{ secrets.USERNAME }}
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.SSHKEY }}
-        script: python app.py
+        script: python /root/where-to-eat-site/app.py
