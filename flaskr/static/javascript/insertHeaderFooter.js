@@ -21,10 +21,12 @@ templateHeader.innerHTML = `
 templateFooter.innerHTML = `
     <div class="footer">
         <div> Социальный проект  <a class="no-decoration" href="https://2359.hse.ru/spd/view/222">"Где Поесть?"</a>  © 2023, Лицей НИУ ВШЭ </div>
-        <a href="https://www.flaticon.com/free-icons/school" title="school icons">School icons created by Freepik - Flaticon</a>
-        <a href="https://www.flaticon.com/free-icons/shop" title="shop icons">Shop icons created by Eucalyp - Flaticon</a>
-    </div>
+        </div>
 `
+
+// <a href="https://www.flaticon.com/free-icons/school" title="school icons">School icons created by Freepik - Flaticon</a>
+// <a href="https://www.flaticon.com/free-icons/shop" title="shop icons">Shop icons created by Eucalyp - Flaticon</a>
+
 
 document.body.prepend(templateHeader.content);
 
@@ -32,7 +34,7 @@ document.body.append(templateFooter.content);
 
 
 function checkSizes() {
-console.log("refreshing")
+    console.log("refreshing")
     const header = document.querySelector('.header');
     const footer = document.querySelector('.footer');
 
@@ -42,13 +44,14 @@ console.log("refreshing")
     const windowHeight = window.innerHeight;
 
 
-    const div = document.querySelector('.side-panel');
+    const div = document.querySelector('.map-body');
     console.log(div)
-    const sidePanelHeight = windowHeight - headerHeight - footerHeight - 30;
+    // header и footer height берут высоты подобранные flex_ом
+    const sidePanelHeight = windowHeight - headerHeight - footerHeight;
     console.log(sidePanelHeight)
 
     console.log(div.style.maxHeight)
-    div.style.maxHeight = `${sidePanelHeight}px`;
+    div.style.height = `${sidePanelHeight}px`;
     console.log(div.style.maxHeight)
 }
 
