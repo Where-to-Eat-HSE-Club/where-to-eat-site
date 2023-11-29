@@ -47,7 +47,7 @@ for i in posts_dict:
 
 reviews = [
     {"id": 1, "name": "Max", "rating": 3, "text": "a great place, bad food"},
-    {"id": 2, "name": "Ivan", "rating": 5, "text": "impressive, very nice"},
+    {"id": 0, "name": "Ivan", "rating": 5, "text": "impressive, very nice"},
     {"id": 1, "name": "Keril", "rating": 1, "text": "my friend died here"}
 ]
 
@@ -98,7 +98,7 @@ def get_reviews(id: int):
     for i in reviews:
         if i["id"] == id:
             html_review_elem = f"""<div class="review-item">
-                  <span class="review-rating">{i["rating"]}</span>
+                  <span class="review-rating">{i["rating"]} ★</span>
                   <span>{i["name"]}</span>
                   <p>{i["text"]}</p>
                 </div>"""

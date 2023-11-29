@@ -4,7 +4,7 @@
     box-sizing: border-box;
     background-color: #f4f4f4;
     overflow: scroll;
-    max-height: 800px;
+    /*max-height: 800px;*/
 }
 
 .side-panel-header {

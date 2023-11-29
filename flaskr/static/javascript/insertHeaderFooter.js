@@ -33,6 +33,10 @@ document.body.prepend(templateHeader.content);
 document.body.append(templateFooter.content);
 
 
+function reflow(elt){
+    console.log(elt.offsetHeight);
+}
+
 function checkSizes() {
     console.log("refreshing")
     const header = document.querySelector('.header');
@@ -43,17 +47,17 @@ function checkSizes() {
 
     const windowHeight = window.innerHeight;
 
-
     const div = document.querySelector('.map-body');
-    console.log(div)
-    // header и footer height берут высоты подобранные flex_ом
     const sidePanelHeight = windowHeight - headerHeight - footerHeight;
-    console.log(sidePanelHeight)
 
-    console.log(div.style.maxHeight)
     div.style.height = `${sidePanelHeight}px`;
-    console.log(div.style.maxHeight)
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 window.addEventListener('resize', checkSizes);
-checkSizes()
+sleep(100).then(checkSizes) // костыль, но работает
+
+reflow(document.querySelector('.footer'))
