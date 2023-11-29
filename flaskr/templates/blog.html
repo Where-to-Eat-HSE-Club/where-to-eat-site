@@ -12,14 +12,15 @@
 <body>
     <div class="blog-body">
         <div class="blog-header">
-            Блоги
+            Наши Обзоры
         </div>
         <div class="posts">
             {% for post in posts %}
                 {% autoescape false %}
                     <div class="post">
-                        <h1> {{ post['name'] }} - {{ post['place_name'] }} by {{ post['author'] }} </h1>
-                        <h3> {{ post['body_text'] }} </h3>
+                        <p class="post-header"> {{ post['name'] }} </p>
+                        <p class="post-info" > Обзор на {{ post['place_name'] }} от {{ post['author'] }}, дата написания: {{ post['creation_date'] }}</p>
+                        <p class="post-body"> {{ post['body_text'] }} </p>
                     </div>
 
                 {% endautoescape %}

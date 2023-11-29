@@ -44,11 +44,13 @@ body {
 .map-header {
     text-align: center;
     font-size: 36px;
-    font-family: "Comic Sans MS", sans-serif;
-    /*margin: 10px 0;*/
+    font-family: "CirceBold", sans-serif;
 }
 
 #map {
-    flex: 3
+    flex: 3;
+    border-right: black;
+    border-right-style: solid;
+    border-right-width: 3px;
 }
 

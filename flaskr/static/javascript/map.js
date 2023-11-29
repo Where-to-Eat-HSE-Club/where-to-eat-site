@@ -65,7 +65,6 @@ async function getDiners() {
     const response = await fetch("/diners");
     const dinersData = await response.json();
 
-
     return dinersData
 }
 
@@ -94,6 +93,12 @@ function fillDinerSidePanel(id, dinerName, position, reviewed) {
     let sidePanelHeader = document.querySelector(".side-panel-header")
     sidePanelHeader.textContent = dinerName
 
+    // let sidePanelHeaderHiddenID = document.createElement("div")
+    // sidePanelHeaderHiddenID.className = "side-panel-header-hidden-id"
+    // sidePanelHeaderHiddenID.textContent = id
+
+    // sidePanelHeader.append(sidePanelHeaderHiddenID)
+
     let sidePanelBody = document.querySelector(".side-panel-body")
 
     addOfficialReview(id, reviewed, sidePanelBody)
@@ -101,7 +106,7 @@ function fillDinerSidePanel(id, dinerName, position, reviewed) {
     addReviews(id, sidePanelBody)
 
     // WIP
-    // addReviewForm(sidePanelBody)
+    addReviewForm(sidePanelBody, id)
 
     document.body.dispatchEvent(updateBodyListenersEvent)
 }
@@ -117,25 +122,24 @@ function addOfficialReview(dinerId, reviewed, sidePanelBody) {
     let officialReviewHeader =  document.createElement("div")
     let officialReview = document.createElement("div")
 
-    officialReviewHeader.textContent = "Официальный обзор от Где Поесть"
-    officialReviewHeader.className = "official-review-header"
+    officialReviewHeader.textContent = "Наш Обзор"
+    officialReviewHeader.className = "side-panel-sub-header"
 
 
-    if (reviewed) {
-        let reviewUrl = "/official_review/" + dinerId;
+    let reviewUrl = "/official_review/" + dinerId;
 
-        officialReview.textContent = "loading now"
-        officialReview.className = "official-review"
-        officialReview.setAttribute("hx-get",  reviewUrl)
-        officialReview.setAttribute("hx-trigger", "load")
-        officialReview.setAttribute("hx-target", "this")
-        officialReview.setAttribute("hx-swap", "outerHTML")
-    } else {
-        officialReview.textContent = "Мы еще не написали обзор этого места"
-        officialReview.className = "official-review"
-    }
-    sidePanelBody.prepend(officialReview)
-    sidePanelBody.prepend(officialReviewHeader)
+    officialReview.textContent = "Загружаю..."
+    officialReview.className = "official-review"
+    officialReview.setAttribute("hx-get",  reviewUrl)
+    officialReview.setAttribute("hx-trigger", "load")
+    officialReview.setAttribute("hx-target", "this")
+    officialReview.setAttribute("hx-swap", "outerHTML")
+
+
+    sidePanelBody.append(officialReviewHeader)
+
+    sidePanelBody.append(officialReview)
+
 
 }
 
@@ -151,14 +155,14 @@ function addReviews(dinerId, sidePanelBody) {
     let reviewsHeader = document.createElement("div")
 
     reviewsHeader.textContent = "Отзывы от людей"
-    reviewsHeader.className = "reviews-header"
+    reviewsHeader.className = "side-panel-sub-header"
 
     sidePanelBody.append(reviewsHeader)
 
     let reviewsUrl = "/reviews/" + dinerId;
 
     reviews.className = "reviews"
-    reviews.textContent = "loading now"
+    reviews.textContent = "Загружаю..."
     reviews.setAttribute("hx-get",  reviewsUrl)
     reviews.setAttribute("hx-trigger", "load")
     reviews.setAttribute("hx-target", "this")
@@ -172,13 +176,39 @@ function addReviews(dinerId, sidePanelBody) {
  *
  * @param sidePanelBody
  */
-function addReviewForm(sidePanelBody) {
+function addReviewForm(sidePanelBody, dinerID) {
+    let reviewFormHeader = document.createElement("div")
+    reviewFormHeader.textContent = "Оставить отзыв"
+    reviewFormHeader.className = "side-panel-sub-header"
+    sidePanelBody.append(reviewFormHeader)
+
     let reviewForm = document.createElement("form")
-    reviewForm.innerHTML = "" +
-        "  <input name=\"name\" type=\"text\" class=\"feedback-input\" placeholder=\"Name\" />" +
-        "  <input name=\"email\" type=\"text\" class=\"feedback-input\" placeholder=\"Email\" />" +
-        "  <textarea name=\"text\" class=\"feedback-input\" placeholder=\"Comment\"></textarea>" +
-        "  <input type=\"submit\" value=\"SUBMIT\"/>"
+    reviewForm.setAttribute("hx-post", "/reviews")
+    reviewForm.setAttribute("hx-swap", "outerHTML")
+    // reviewForm.setAttribute("hx-include", "#side-panel-header-hidden-id")
+    reviewForm.textContent = "Загружаю..."
+
+    reviewForm.innerHTML = `
+        <input name="name" type="text" class="feedback-input" placeholder="Имя" />
+        <input name="diner_id" type="text" class="side-panel-header-hidden-id" value=${dinerID}>
+        <div class="stars">
+            <div class="stars-label">Рейтинг</div>
+            <div class="stars-bar">
+                <input class="star star-5" id="star-5" type="radio" name="rating" value="5"/>
+                <label class="star star-5" for="star-5"></label>
+                <input class="star star-4" id="star-4" type="radio" name="rating" value="4"/>
+                <label class="star star-4" for="star-4"></label>
+                <input class="star star-3" id="star-3" type="radio" name="rating" value="3"/>
+                <label class="star star-3" for="star-3"></label>
+                <input class="star star-2" id="star-2" type="radio" name="rating" value="2"/>
+                <label class="star star-2" for="star-2"></label>
+                <input class="star star-1" id="star-1" type="radio" name="rating" value="1"/>
+                <label class="star star-1" for="star-1"></label>
+            </div>
+        </div>
+        <textarea name="text" class="feedback-input" placeholder="Отзыв"></textarea>
+        <button class="submit-button" type="submit">Отправить</button>
+    `
 
 
     sidePanelBody.append(reviewForm)

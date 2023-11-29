@@ -37,8 +37,6 @@
             </div>
             <div class="side-panel-body">
 
-
-
             </div>
         </div>
     </div>
@@ -48,12 +46,10 @@
 
         document.body.addEventListener('htmx:load', function (evt) {
             htmx.logAll();
-            console.log("htmx logging enabled")
         });
 
         document.body.addEventListener('updateBodyListeners', function (evt) {
             htmx.process(document.body)
-            console.log("updateBodyListeners fired")
         });
     </script>
 </body>
