@@ -121,13 +121,16 @@ function fillDinerSidePanel(id, dinerName, position, reviewed) {
  *
  * - If the user clicked not on the marker, close currently opened diner's information on the side panel.
  *
- * @param eventType
+ * @param obj
  */
-function onMapClick(eventType) {
-    console.log(eventType)
-    if (eventType !== "marker") {
-        clearDinerSidePanel()
+function onMapClick(obj) {
+    console.log(obj)
+    if (obj) {
+        if (obj["type"] === "marker"){
+            return
+        }
     }
+    clearDinerSidePanel()
 }
 
 /**
@@ -173,8 +176,7 @@ async function setupMap(YMap, YMapDefaultSchemeLayer, YMapControls, YMapZoomCont
 
     const mapListener = new YMapListener({
         layer: 'any',
-        // Добавление обработчиков на слушатель.
-        onClick: ({type}) => {onMapClick(type)}, // FIXME 80% of clicks throw errors
+        onClick: (obj) => {onMapClick(obj)},
         // onMouseMove: mouseMoveCallback
     });
 
