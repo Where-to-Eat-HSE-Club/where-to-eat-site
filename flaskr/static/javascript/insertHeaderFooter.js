@@ -44,13 +44,15 @@ function checkSizes() {
 
     const headerHeight = header.offsetHeight;
     const footerHeight = footer.offsetHeight;
-
     const windowHeight = window.innerHeight;
 
-    const div = document.querySelector('.map-body');
     const sidePanelHeight = windowHeight - headerHeight - footerHeight;
 
-    div.style.height = `${sidePanelHeight}px`;
+    const div = document.querySelector('.map-body');
+    if (div) {
+        div.style.height = `${sidePanelHeight}px`;
+    }
+
 }
 
 function sleep(ms) {
