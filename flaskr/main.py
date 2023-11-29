@@ -37,19 +37,23 @@ posts_dict = [
         "name": "whaat",
         "id": 412,
         "author": "kekus",
-        "body_text": "memes"
     }
 
 ]
 
 for i in posts_dict:
-    i["body_text"] = i["body_text"].replace("\n", "<br>")
+    if "body_text" in i:
+        i["body_text"] = i["body_text"].replace("\n", "<br>")
 
-# , "reviews": [{"id": 1, "name": "Max", "rating": 3, "text": "a great place, bad food"}]
-# , "reviews": [{"id": 2, "name": "Ivan", "rating": 5, "text": "impressive, very nice"}]
+reviews = [
+    {"id": 1, "name": "Max", "rating": 3, "text": "a great place, bad food"},
+    {"id": 2, "name": "Ivan", "rating": 5, "text": "impressive, very nice"},
+    {"id": 1, "name": "Keril", "rating": 1, "text": "my friend died here"}
+]
+
 diners = [
-    {"id": 0, "name": "Cofix", "position": [55.754005, 37.636823], "reviewed": False},
-    {"id": 1, "name": "Даблби", "position": [55.712390, 37.618911], "reviewed": True},
+    {"id": 0, "name": "Cofix", "position": [55.754005, 37.636823], "reviewed": True},
+    {"id": 1, "name": "Даблби", "position": [55.712390, 37.618911], "reviewed": False},
 ]
 
 
@@ -79,10 +83,33 @@ def get_lyceum_buildings():
 
 
 @app.get("/official_review/<int:id>")
-def get_reviews(id: int):
-    text = posts_dict[id]["body_text"]
+def get_official_review(id: int):
+    if "body_text" in posts_dict[id]:
+        text = posts_dict[id]["body_text"]
+    else:
+        text = "Мы еще не написали обзор этого места"
 
-    return f"<div class='official-review-text'>{text}</div>"
+    return f"<div class='official-review'>{text}</div>"
+
+
+@app.get("/reviews/<int:id>")
+def get_reviews(id: int):
+    res = []
+    for i in reviews:
+        if i["id"] == id:
+            html_review_elem = f"""<div class="review-item">
+                  <span class="review-rating">{i["rating"]}</span>
+                  <span>{i["name"]}</span>
+                  <p>{i["text"]}</p>
+                </div>"""
+            res.append(html_review_elem)
+
+    if res:
+        return " ".join(res)
+
+    res = "<div class='no-reviews'>Нет отзывов, оставьте первый!</div>"
+
+    return res
 
 
 if __name__ == "__main__":

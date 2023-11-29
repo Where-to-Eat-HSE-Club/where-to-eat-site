@@ -10,14 +10,21 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 100vh;
+    overflow: hidden;
 }
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
 .header {
     background-color: #FEBB0C;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 0;
+
 }
 
 .footer {

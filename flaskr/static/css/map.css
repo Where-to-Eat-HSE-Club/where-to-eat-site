@@ -1,7 +1,6 @@
 body {
     display: flex;
     flex-direction: column;
-
 }
 
 .map-body {
@@ -11,52 +10,6 @@ body {
 
 }
 
-.side-panel {
-    flex: 1;
-    padding: 20px;
-    box-sizing: border-box;
-    background-color: #f4f4f4;
-}
-
-.side-panel-header {
-    text-align: center;
-    font-size: 36px;
-    font-family: "Roboto Light", sans-serif;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.official-review {
-    padding: 100px;
-    margin-bottom: 15px;
-    color: #555;
-    font-family: "Roboto Light", sans-serif;
-}
-.review-item {
-    margin-bottom: 15px;
-}
-
-.review-rating {
-    font-weight: bold;
-    margin-right: 5px;
-    color: #3498db; /* Set the color for the review ratings */
-}
-
-/* Style the border between rating and review text */
-.review-rating::after {
-    content: '|';
-    margin-left: 5px;
-    margin-right: 5px;
-    color: #aaa;
-}
-
-/* Add a subtle box shadow to the reviews */
-.review-item {
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    background-color: #fff;
-}
 .marker {
     background-color: rgba(169, 169, 169, 0.5);
     transition: background-color 0.3s ease;
@@ -98,3 +51,4 @@ body {
 #map {
     flex: 3
 }
+

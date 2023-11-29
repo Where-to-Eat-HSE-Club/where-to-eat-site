@@ -62,12 +62,9 @@ async function getLyceumBuildings() {
  * Returns all diners in a list like [{"id": 0, "name": "Cofix", "position": [55.754005, 37.636823], "reviewed": False}]
  */
 async function getDiners() {
-    console.log("Requesting diners")
-
     const response = await fetch("/diners");
     const dinersData = await response.json();
 
-    console.log(dinersData);
 
     return dinersData
 }
@@ -84,6 +81,7 @@ function clearDinerSidePanel() {
 }
 
 /**
+ * Fill side panel with diner info.
  *
  * @param id
  * @param dinerName
@@ -92,14 +90,39 @@ function clearDinerSidePanel() {
  */
 function fillDinerSidePanel(id, dinerName, position, reviewed) {
     clearDinerSidePanel()
-    console.log(`Filled side panel with ${dinerName}`)
+
     let sidePanelHeader = document.querySelector(".side-panel-header")
     sidePanelHeader.textContent = dinerName
 
     let sidePanelBody = document.querySelector(".side-panel-body")
+
+    addOfficialReview(id, reviewed, sidePanelBody)
+
+    addReviews(id, sidePanelBody)
+
+    // WIP
+    // addReviewForm(sidePanelBody)
+
+    document.body.dispatchEvent(updateBodyListenersEvent)
+}
+
+/**
+ * Insert official review at the start of sidePanelBody
+ *
+ * @param dinerId
+ * @param reviewed
+ * @param sidePanelBody
+ */
+function addOfficialReview(dinerId, reviewed, sidePanelBody) {
+    let officialReviewHeader =  document.createElement("div")
     let officialReview = document.createElement("div")
-    if (!reviewed) {
-        let reviewUrl = "/official_review/" + id;
+
+    officialReviewHeader.textContent = "Официальный обзор от Где Поесть"
+    officialReviewHeader.className = "official-review-header"
+
+
+    if (reviewed) {
+        let reviewUrl = "/official_review/" + dinerId;
 
         officialReview.textContent = "loading now"
         officialReview.className = "official-review"
@@ -107,13 +130,59 @@ function fillDinerSidePanel(id, dinerName, position, reviewed) {
         officialReview.setAttribute("hx-trigger", "load")
         officialReview.setAttribute("hx-target", "this")
         officialReview.setAttribute("hx-swap", "outerHTML")
+    } else {
+        officialReview.textContent = "Мы еще не написали обзор этого места"
+        officialReview.className = "official-review"
     }
     sidePanelBody.prepend(officialReview)
-    console.log("Firing updateBodyListeners event")
+    sidePanelBody.prepend(officialReviewHeader)
 
-    document.body.dispatchEvent(updateBodyListenersEvent)
+}
 
-    console.log("appended child " + officialReview)
+/**
+ * Insert all diner reviews at the end of sidePanelBody
+ *
+ * @param dinerId
+ * @param sidePanelBody
+ */
+function addReviews(dinerId, sidePanelBody) {
+    let reviews = document.createElement("div")
+
+    let reviewsHeader = document.createElement("div")
+
+    reviewsHeader.textContent = "Отзывы от людей"
+    reviewsHeader.className = "reviews-header"
+
+    sidePanelBody.append(reviewsHeader)
+
+    let reviewsUrl = "/reviews/" + dinerId;
+
+    reviews.className = "reviews"
+    reviews.textContent = "loading now"
+    reviews.setAttribute("hx-get",  reviewsUrl)
+    reviews.setAttribute("hx-trigger", "load")
+    reviews.setAttribute("hx-target", "this")
+    reviews.setAttribute("hx-swap", "innerHTML")
+
+    sidePanelBody.append(reviews)
+}
+
+/**
+ * Insert form for leaving a review at the end of sidePanelBody
+ *
+ * @param sidePanelBody
+ */
+function addReviewForm(sidePanelBody) {
+    let reviewForm = document.createElement("form")
+    reviewForm.innerHTML = "" +
+        "  <input name=\"name\" type=\"text\" class=\"feedback-input\" placeholder=\"Name\" />" +
+        "  <input name=\"email\" type=\"text\" class=\"feedback-input\" placeholder=\"Email\" />" +
+        "  <textarea name=\"text\" class=\"feedback-input\" placeholder=\"Comment\"></textarea>" +
+        "  <input type=\"submit\" value=\"SUBMIT\"/>"
+
+
+    sidePanelBody.append(reviewForm)
+
 }
 
 /**
@@ -124,12 +193,15 @@ function fillDinerSidePanel(id, dinerName, position, reviewed) {
  * @param obj
  */
 function onMapClick(obj) {
+    // For now disabled, will add close side panel button later, because map click events are unreliable
+    return
     console.log(obj)
     if (obj) {
         if (obj["type"] === "marker"){
             return
         }
     }
+
     clearDinerSidePanel()
 }
 
@@ -266,6 +338,7 @@ async function setupDiners(map, YMapMarker) {
  * Function called on start, inits the map and places lyceum buildings and diners markers on the map.
  */
 async function init(){
+
     let {
         YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls,
         YMapListener, YMapDefaultFeaturesLayer, YMapDefaultMarker, YMapZoomControl
@@ -275,4 +348,5 @@ async function init(){
 
     await setupLyceumBuildings(map, YMapMarker)
     await setupDiners(map, YMapMarker)
+
 }

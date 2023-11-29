@@ -1,0 +1,127 @@
+
+.side-panel {
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #f4f4f4;
+    overflow: scroll;
+    max-height: 800px;
+}
+
+.side-panel-header {
+    text-align: center;
+    font-size: 36px;
+    font-family: "Roboto Light", sans-serif;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.official-review {
+    margin-bottom: 15px;
+    color: #1f1f1f;
+    font-family: "Roboto Light", sans-serif;
+    background-color: #cccccc;
+    padding: 10px 20px;
+    border-color: black;
+    border-radius: 20px;
+    border-style: solid;
+}
+
+.official-review-header {
+    font-size: 20px;
+    font-family: "Roboto Light", sans-serif;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    color: #333;
+}
+.reviews {
+    display: flex;
+    flex-direction: column;
+}
+.reviews-header {
+    font-size: 20px;
+    font-family: "Roboto Light", sans-serif;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    color: #333;
+}
+.no-reviews {
+
+}
+
+.review-item {
+    margin-bottom: 15px;
+}
+
+
+.reviews p {
+    margin: 0;
+}
+
+.review-rating {
+    font-weight: bold;
+    margin-right: 5px;
+    color: #3498db; /* Set the color for the review ratings */
+}
+
+/* Style the border between rating and review text */
+.review-rating::after {
+    content: '|';
+    margin-left: 5px;
+    margin-right: 5px;
+    color: #aaa;
+}
+
+/* Add a subtle box shadow to the reviews */
+.review-item {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    background-color: #fff;
+}
+
+form { max-width:420px; margin:50px auto; }
+
+.feedback-input {
+  color: #000000;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight:500;
+  font-size: 18px;
+  border-radius: 5px;
+  line-height: 22px;
+  background-color: transparent;
+  border:2px solid #CC6666;
+  transition: all 0.3s;
+  padding: 13px;
+  margin-bottom: 15px;
+  width:100%;
+  box-sizing: border-box;
+  outline:0;
+}
+
+.feedback-input:focus { border:2px solid #CC4949; }
+
+textarea {
+  height: 150px;
+  line-height: 150%;
+  resize:vertical;
+}
+
+[type="submit"] {
+  font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+  width: 100%;
+  background:#CC6666;
+  border-radius:5px;
+  border:0;
+  cursor:pointer;
+  color: #000000;
+  font-size:24px;
+  padding-top:10px;
+  padding-bottom:10px;
+  transition: all 0.3s;
+  margin-top:-4px;
+  font-weight:700;
+}
+[type="submit"]:hover { background:#CC4949; }

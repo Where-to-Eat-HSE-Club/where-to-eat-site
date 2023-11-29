@@ -29,3 +29,28 @@ templateFooter.innerHTML = `
 document.body.prepend(templateHeader.content);
 
 document.body.append(templateFooter.content);
+
+
+function checkSizes() {
+console.log("refreshing")
+    const header = document.querySelector('.header');
+    const footer = document.querySelector('.footer');
+
+    const headerHeight = header.offsetHeight;
+    const footerHeight = footer.offsetHeight;
+
+    const windowHeight = window.innerHeight;
+
+
+    const div = document.querySelector('.side-panel');
+    console.log(div)
+    const sidePanelHeight = windowHeight - headerHeight - footerHeight - 30;
+    console.log(sidePanelHeight)
+
+    console.log(div.style.maxHeight)
+    div.style.maxHeight = `${sidePanelHeight}px`;
+    console.log(div.style.maxHeight)
+}
+
+window.addEventListener('resize', checkSizes);
+checkSizes()
