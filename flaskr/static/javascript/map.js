@@ -125,12 +125,14 @@ function clearDinerSidePanel() {
 /**
  * Fill side panel with diner info.
  *
- * @param id
+ * @param dinerID
  * @param dinerName
  * @param coordinates
  * @param reviewed
+ * @param fullAddress
+ * @param placeID
  */
-function fillDinerSidePanel(id, dinerName, coordinates, reviewed) {
+function fillDinerSidePanel(dinerID, dinerName, coordinates, reviewed, fullAddress, placeID) {
     clearDinerSidePanel()
 
     let sidePanelHeader = document.querySelector(".side-panel-header")
@@ -138,11 +140,24 @@ function fillDinerSidePanel(id, dinerName, coordinates, reviewed) {
 
     let sidePanelBody = document.querySelector(".side-panel-body")
 
-    addOfficialReview(id, reviewed, sidePanelBody)
 
-    addReviews(id, sidePanelBody)
+    let sidePanelAddressHeader = document.createElement("div")
+    sidePanelAddressHeader.className = "side-panel-subheader"
+    sidePanelAddressHeader.textContent = "Полный адрес"
 
-    addReviewForm(sidePanelBody, id)
+    let sidePanelAddress = document.createElement("div")
+    sidePanelAddress.className = "lyceum-full-address"
+    sidePanelAddress.textContent = fullAddress
+
+    sidePanelBody.append(sidePanelAddressHeader)
+    sidePanelBody.append(sidePanelAddress)
+
+
+    addOfficialReview(dinerID, reviewed, sidePanelBody)
+
+    addReviews(placeID, sidePanelBody)
+
+    addReviewForm(sidePanelBody, placeID)
 
     document.body.dispatchEvent(updateBodyListenersEvent)
 }
@@ -150,18 +165,18 @@ function fillDinerSidePanel(id, dinerName, coordinates, reviewed) {
 /**
  * Insert official review at the start of sidePanelBody
  *
- * @param dinerId
+ * @param dinerID
  * @param reviewed
  * @param sidePanelBody
  */
-function addOfficialReview(dinerId, reviewed, sidePanelBody) {
+function addOfficialReview(dinerID, reviewed, sidePanelBody) {
     let officialReviewHeader =  document.createElement("div")
     let officialReview = document.createElement("div")
 
     officialReviewHeader.textContent = "Наш Обзор"
     officialReviewHeader.className = "side-panel-subheader"
 
-    let reviewUrl = "/official_review/" + dinerId;
+    let reviewUrl = "/official_review/" + dinerID;
 
     officialReview.textContent = "Загружаю..."
     officialReview.className = "official-review"
@@ -178,10 +193,10 @@ function addOfficialReview(dinerId, reviewed, sidePanelBody) {
 /**
  * Insert all diner reviews at the end of sidePanelBody
  *
- * @param dinerId
+ * @param placeID
  * @param sidePanelBody
  */
-function addReviews(dinerId, sidePanelBody) {
+function addReviews(placeID, sidePanelBody) {
     let reviews = document.createElement("div")
 
     let reviewsHeader = document.createElement("div")
@@ -191,7 +206,7 @@ function addReviews(dinerId, sidePanelBody) {
 
     sidePanelBody.append(reviewsHeader)
 
-    let reviewsUrl = "/reviews/" + dinerId;
+    let reviewsUrl = "/reviews/" + placeID;
 
     reviews.className = "reviews"
     reviews.textContent = "Загружаю..."
@@ -207,9 +222,9 @@ function addReviews(dinerId, sidePanelBody) {
  * Insert form for leaving a review at the end of sidePanelBody
  *
  * @param sidePanelBody
- * @param dinerID
+ * @param placeID
  */
-function addReviewForm(sidePanelBody, dinerID) {
+function addReviewForm(sidePanelBody, placeID) {
     let reviewFormHeader = document.createElement("div")
     reviewFormHeader.textContent = "Оставить отзыв"
     reviewFormHeader.className = "side-panel-subheader"
@@ -222,7 +237,7 @@ function addReviewForm(sidePanelBody, dinerID) {
 
     reviewForm.innerHTML = `
         <input name="name" type="text" class="feedback-input" placeholder="Имя" />
-        <input name="diner_id" type="text" class="side-panel-header-hidden-id" value=${dinerID}>
+        <input name="diner_id" type="text" class="side-panel-header-hidden-id" value=${placeID}>
         <div class="stars">
             <div class="stars-label">Рейтинг</div>
             <div class="stars-bar">
@@ -345,10 +360,12 @@ async function setupLyceumBuildings(map, YMapMarker) {
 async function setupDiners(map, YMapMarker) {
     getDiners().then((dinersData) => {
         for (let diner of dinersData) {
-            let id = diner.id
+            let placeID = diner.id
+            let dinerID = diner.diner_id
             let name = diner.name
             let coordinates = diner.coordinates
             let reviewed = diner.reviewed
+            let fullAddress = diner.full_address
 
             let markerElement = document.createElement("div")
             let markerIcon = document.createElement("img")
@@ -366,7 +383,7 @@ async function setupDiners(map, YMapMarker) {
             let placemark = new YMapMarker(
                 {
                     coordinates: prepareCoordinates(coordinates),
-                    onFastClick: () => {fillDinerSidePanel(id, name, coordinates, reviewed)}
+                    onFastClick: () => {fillDinerSidePanel(dinerID, name, coordinates, reviewed, fullAddress, placeID)}
                 },
                 markerElement
             )

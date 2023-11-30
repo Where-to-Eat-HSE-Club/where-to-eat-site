@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask import Flask, render_template, Response, request
 from json import dumps
 from requests import get
@@ -42,7 +44,8 @@ posts_dict = [
         "diner_id": 0,
         "author": "Игорь",
         "place_name": "Даблби",
-        "body_text": """Продолжаем нашу рубрику " Кофе брейк", и наше следующее заведение - Даблби.☕️
+        "body_text": """
+        Продолжаем нашу рубрику " Кофе брейк", и наше следующее заведение - Даблби.☕️
             Даблби - международная сеть кофеен🌍 и является самой титулованной в России. В ее составе многократные чемпионы России по приготовлению кофе, сертифицированные специалисты и тренеры, а также вице-чемпион мира по обжарке кофе, финалист мирового чемпионата по завариванию кофе🏆. Сейчас в сети более 60 кофеен.
             
             В меню мы видим множество видов кофе, но если вы предпочитаете чай, то для вас тоже что-то найдется.☺️🍵
@@ -86,9 +89,9 @@ for i in posts_dict:
         i["body_text"] = i["body_text"].replace("\n", "<br>")
 
 reviews = [
-    {"diner_id": 1, "name": "Max", "rating": 3, "text": "great place, bad food"},
-    {"diner_id": 0, "name": "Ivan", "rating": 5, "text": "impressive, very nice"},
-    {"diner_id": 1, "name": "Keril", "rating": 1, "text": "my friend died here"}
+    {"place_id": 1, "name": "Max", "rating": 3, "text": "great place, bad food"},
+    {"place_id": 0, "name": "Ivan", "rating": 5, "text": "impressive, very nice"},
+    {"place_id": 1, "name": "Keril", "rating": 1, "text": "my friend died here"}
 ]
 
 diner_names = [
@@ -98,14 +101,11 @@ diner_names = [
 ]
 
 diner_locations = [
-    {"id": 1, "coordinates": [55.754005, 37.636823]},
-    {"id": 0, "coordinates": [55.754025, 37.635746]},
-    {"id": 3, "coordinates": [55.783735, 37.632352]},
+    {"id": 0, "diner_id": 1, "coordinates": [55.754005, 37.636823], "full_address": "улица Солянка, 2/6"},
+    {"id": 1, "diner_id": 0, "coordinates": [55.754025, 37.635746], "full_address": "Солянский проезд, 1"},
+    {"id": 2, "diner_id": 3, "coordinates": [55.783735, 37.632352], "full_address": "улица Гиляровского, 39с3"},
+    {"id": 3, "diner_id": 3, "coordinates": [55.784906, 37.66115], "full_address": "Верхняя Красносельская улица, 7с2"},
 ]
-
-
-# TODO multiple geographical locations per diner
-# make a id to diner name table and make a diner id to location table
 
 
 def get_address_gps(address: str):
@@ -115,7 +115,10 @@ def get_address_gps(address: str):
     if "error" in res.json():
         return None
     res = res.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"]
-    print(res)
+    lat = res.split(" ")[1]
+    lon = res.split(" ")[0]
+    print(lat, lon)
+    return [lat, lon]
 
 
 @app.route('/')
@@ -135,14 +138,17 @@ def blog_page():
 
 @app.route("/diners")
 def get_diners():
-    for diner in diners:
-        review = get_official_review(diner["id"])
+    for diner_location in diner_locations:
+        diner_id = diner_location["diner_id"]
+        diner_name = list(filter(lambda x: x["id"] == diner_id, diner_names))[0]["name"]
+        diner_location["name"] = diner_name
+        review = get_official_review(diner_id)
         if "Мы еще не написали обзор этого места" in review:
-            diner["reviewed"] = False
+            diner_location["reviewed"] = False
         else:
-            diner["reviewed"] = True
+            diner_location["reviewed"] = True
 
-    return Response(dumps(diners, default=str), 200, mimetype='application/json')
+    return Response(dumps(diner_locations, default=str), 200, mimetype='application/json')
 
 
 @app.route("/lyceum_buildings")
@@ -186,14 +192,14 @@ def get_official_review(id: int):
 @app.get("/reviews/<int:id>")
 def get_reviews(id: int):
     result = []
-    for review in reviews:
-        if review["diner_id"] == id:
-            html_review_elem = f"""<div class="review-item">
-                  <span class="review-rating">{review["rating"]} ★</span>
-                  <span>{review["name"]}</span>
-                  <p>{review["text"]}</p>
-                </div>"""
-            result.append(html_review_elem)
+    reviews_with_matching_id = list(filter(lambda x: x["place_id"] == id, reviews))
+    for review in reviews_with_matching_id:
+        html_review_elem = f"""<div class="review-item">
+              <span class="review-rating">{review["rating"]} ★</span>
+              <span>{review["name"]}</span>
+              <p>{review["text"]}</p>
+            </div>"""
+        result.append(html_review_elem)
 
     if result:
         result = " ".join(result)
@@ -212,16 +218,13 @@ def add_review():
     review_text = review_data["text"]
 
     # For now just add new review to others, will be reset on program restart
-    reviews.append({"diner_id": int(review_data["diner_id"]), "name": review_author_name, "rating": review_rating,
+    reviews.append({"place_id": int(review_data["diner_id"]), "name": review_author_name, "rating": review_rating,
                     "text": review_text})
 
     return "<div>Спасибо, отзыв отправлен, скоро мы его рассмотрим и он появится тут!</div>"
 
 
 if __name__ == "__main__":
-    # get_address_gps("Москва, Китай город, Солянский переулок, 1")
-    # get_address_gps("Москва, Китай город, Цветной бульвар, 1")
-    # get_address_gps("Москва, Китай город, Милютинский переулок, 3")
-    # get_address_gps("Москва, Китай город, Таганская ул., 36, стр. 1")
-    # get_address_gps("Москва, Китай город, Наб. Академика Туполева, 15")
+    # get_address_gps("Верхняя Красносельская ул., 7, стр. 2")
+
     app.run(host="0.0.0.0", port=80)
