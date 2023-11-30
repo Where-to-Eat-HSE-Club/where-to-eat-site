@@ -4,12 +4,35 @@ from json import dumps
 app = Flask(__name__)
 
 lyceum_buildings = [
-    {"coordinates": [55.752318, 37.637371], "name": "Лицей на Солянке"},
-    {"coordinates": [55.753164, 37.648106], "name": "Вышка на Покре"},
-    {"coordinates": [55.760825, 37.652278], "name": "Лицей на Ляле"},
-    {"coordinates": [55.763528, 37.643714], "name": "Лицей на БХ"},
-    {"coordinates": [55.769390, 37.618911], "name": "Лицей на Колобке"},
+    {"id": 0, "coordinates": [55.752318, 37.637371], "name": "Лицей на Солянке", "full_address": "Солянка, 14А"},
+    {"id": 1, "coordinates": [55.753164, 37.648106], "name": "Вышка на Покре", "full_address": "Покровский бульвар, 11с10"},
+    {"id": 2, "coordinates": [55.760825, 37.652278], "name": "Лицей на Ляле", "full_address": "Лялин переулок, 3А"},
+    {"id": 3, "coordinates": [55.763528, 37.643714], "name": "Лицей на БХ", "full_address": "Большой Харитоньевский переулок, 4с1"},
+    {"id": 4, "coordinates": [55.769390, 37.618911], "name": "Лицей на Колобке", "full_address": "3-й Колобовский переулок, 8с2"},
 ]
+
+lyceum_buildings_areas = [
+    {"lyceum_id": 0, "areas": ["МатИнфо", "Психология", "Естественные науки", "Востоковедение", "Математика"]},
+    {"lyceum_id": 1, "areas": ["Большая вышка, ФКН"]},
+    {"lyceum_id": 2, "areas": ["Футуритет (8 и 9 классы)"]},
+    {"lyceum_id": 3, "areas": ["Гуманитарные науки", "Дизайн", "Юриспруденция"]},
+    {"lyceum_id": 4, "areas": ["Экономика и математика", "Экономика и социальные науки"]},
+]
+
+areas_icons = {
+    "МатИнфо": "matinfo",
+    "Психология": "psychology",
+    "Естественные науки": "natural_science",
+    "Востоковедение": "east",
+    "Математика": "math",
+    "Гуманитарные науки": "gum",
+    "Дизайн": "design",
+    "Юриспруденция": "better_call_saul",
+    "Экономика и математика": "economics_math",
+    "Экономика и социальные науки": "economics_social",
+    "Футуритет (8 и 9 классы)": "futuritet",
+    "Большая вышка, ФКН": "hse",
+}
 
 posts_dict = [
     {
@@ -67,9 +90,9 @@ reviews = [
 ]
 
 diners = [
-    {"id": 1, "name": "Cofix", "position": [55.754005, 37.636823]},
-    {"id": 0, "name": "Даблби", "position": [55.754025, 37.635746]},
-    {"id": 3, "name": "Андерсон", "position": [55.783735, 37.632352]},
+    {"id": 1, "name": "Cofix", "coordinates": [55.754005, 37.636823]},
+    {"id": 0, "name": "Даблби", "coordinates": [55.754025, 37.635746]},
+    {"id": 3, "name": "Андерсон", "coordinates": [55.783735, 37.632352]},
 ]
 
 
@@ -109,6 +132,28 @@ def get_lyceum_buildings():
     return Response(dumps(lyceum_buildings, default=str), 200, mimetype='application/json')
 
 
+@app.get("/lyceum_buildings/<int:id>")
+def get_lyceum_building_areas(id: int):
+    lyceums_with_matching_id = list(filter(lambda x: x["lyceum_id"] == id, lyceum_buildings_areas))
+    result = []
+    prefix = "<div class='lyceum-areas'>"
+    postfix = "</div>"
+    for area in lyceums_with_matching_id[0]["areas"]:
+
+        icon_path = f"/static/images/areas_icons/{areas_icons[area]}.png"
+        html_review_elem = f"""<div class="lyceum-area-item">
+<img src='{icon_path}' alt='{area}'>{area}
+                </div>"""
+        result.append(html_review_elem)
+
+    if result:
+        result = " ".join(result)
+    else:
+        result = "<div class='no-reviews'>Что-то пошло не так</div>"
+
+    return prefix + result + postfix
+
+
 @app.get("/official_review/<int:id>")
 def get_official_review(id: int):
     posts_with_matching_id = list(filter(lambda x: x["diner_id"] == id, posts_dict))
@@ -133,9 +178,10 @@ def get_reviews(id: int):
             result.append(html_review_elem)
 
     if result:
-        return " ".join(result)
+        result = " ".join(result)
+    else:
+        result = "<div class='no-reviews'>Нет отзывов, оставьте первый!</div>"
 
-    result = "<div class='no-reviews'>Нет отзывов, оставьте первый!</div>"
     return result
 
 

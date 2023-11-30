@@ -31,8 +31,8 @@ function reflow(elt){
  * @return {[number, number]}
  */
 function prepareCoordinates(coordinates, offset= 4) {
-    y = coordinates[0]
-    x = coordinates[1]
+    let y = coordinates[0]
+    let x = coordinates[1]
     y += offset / 111111
     x -= offset / (111111 * Math.cos(y * Math.PI / 180))
 
@@ -47,25 +47,68 @@ function prepareCoordinates(coordinates, offset= 4) {
  * Returns all lyceums in a list like [{"coordinates": [55.752318, 37.637371], "name": "Лицей на Солянке"}]
  */
 async function getLyceumBuildings() {
-    console.log("Requesting lyceum buildings")
     const response = await fetch("/lyceum_buildings");
-    const lyceumBuildingsData = await response.json();
+    return await response.json()
+}
 
-    console.log(lyceumBuildingsData);
+/**
+ * Fill side panel with info about selected lyceum building (name, address, learning areas).
+ *
+ * @param lyceumID
+ * @param name
+ * @param coordinates
+ * @param fullAddress
+ */
+function fillLyceumBuildingSidePanel(lyceumID, name, coordinates, fullAddress) {
+    clearDinerSidePanel()
 
-    return lyceumBuildingsData
+    let sidePanelHeader = document.querySelector(".side-panel-header")
+    sidePanelHeader.textContent = name
+
+    let sidePanelBody = document.querySelector(".side-panel-body")
+
+
+    let sidePanelSubHeader = document.createElement("div")
+    sidePanelSubHeader.className = "side-panel-subheader"
+    sidePanelSubHeader.textContent = "Полный адрес"
+    sidePanelBody.append(sidePanelSubHeader)
+
+    let sidePanelSubHeaderContent = document.createElement("div")
+    sidePanelSubHeaderContent.className = "lyceum-full-address"
+    sidePanelSubHeaderContent.textContent = fullAddress
+    sidePanelBody.append(sidePanelSubHeaderContent)
+
+    let lyceumAreasHeader = document.createElement("div")
+
+    let lyceumAreas = document.createElement("div")
+
+    lyceumAreasHeader.textContent = "Направления в этом здании"
+    lyceumAreasHeader.className = "side-panel-subheader"
+
+    sidePanelBody.append(lyceumAreasHeader)
+
+    let lyceumAreasUrl = "/lyceum_buildings/" + lyceumID;
+
+    lyceumAreas.className = "lyceum-areas"
+    lyceumAreas.textContent = "Загружаю..."
+    lyceumAreas.setAttribute("hx-get",  lyceumAreasUrl)
+    lyceumAreas.setAttribute("hx-trigger", "load")
+    lyceumAreas.setAttribute("hx-target", "this")
+    lyceumAreas.setAttribute("hx-swap", "innerHTML")
+
+    sidePanelBody.append(lyceumAreas)
+
+    document.body.dispatchEvent(updateBodyListenersEvent)
 }
 
 /**
  * Fetch all diners' data from flask endpoint
  *
- * Returns all diners in a list like [{"id": 0, "name": "Cofix", "position": [55.754005, 37.636823], "reviewed": False}]
+ * Returns all diners in a list like [{"id": 0, "name": "Cofix", "coordinates": [55.754005, 37.636823], "reviewed": False}]
  */
 async function getDiners() {
     const response = await fetch("/diners");
-    const dinersData = await response.json();
-
-    return dinersData
+    return await response.json()
 }
 
 /**
@@ -73,7 +116,7 @@ async function getDiners() {
  */
 function clearDinerSidePanel() {
     let sidePanelHeader = document.querySelector(".side-panel-header")
-    sidePanelHeader.textContent = "Кликните по любому ресторану, чтобы открыть информацию о нём."
+    sidePanelHeader.textContent = "Кликните по любому ресторану или зданию лицея, чтобы открыть информацию о нём."
 
     let sidePanelBody = document.querySelector(".side-panel-body")
     sidePanelBody.innerHTML = ""
@@ -84,20 +127,14 @@ function clearDinerSidePanel() {
  *
  * @param id
  * @param dinerName
- * @param position
+ * @param coordinates
  * @param reviewed
  */
-function fillDinerSidePanel(id, dinerName, position, reviewed) {
+function fillDinerSidePanel(id, dinerName, coordinates, reviewed) {
     clearDinerSidePanel()
 
     let sidePanelHeader = document.querySelector(".side-panel-header")
     sidePanelHeader.textContent = dinerName
-
-    // let sidePanelHeaderHiddenID = document.createElement("div")
-    // sidePanelHeaderHiddenID.className = "side-panel-header-hidden-id"
-    // sidePanelHeaderHiddenID.textContent = id
-
-    // sidePanelHeader.append(sidePanelHeaderHiddenID)
 
     let sidePanelBody = document.querySelector(".side-panel-body")
 
@@ -105,7 +142,6 @@ function fillDinerSidePanel(id, dinerName, position, reviewed) {
 
     addReviews(id, sidePanelBody)
 
-    // WIP
     addReviewForm(sidePanelBody, id)
 
     document.body.dispatchEvent(updateBodyListenersEvent)
@@ -123,8 +159,7 @@ function addOfficialReview(dinerId, reviewed, sidePanelBody) {
     let officialReview = document.createElement("div")
 
     officialReviewHeader.textContent = "Наш Обзор"
-    officialReviewHeader.className = "side-panel-sub-header"
-
+    officialReviewHeader.className = "side-panel-subheader"
 
     let reviewUrl = "/official_review/" + dinerId;
 
@@ -135,12 +170,9 @@ function addOfficialReview(dinerId, reviewed, sidePanelBody) {
     officialReview.setAttribute("hx-target", "this")
     officialReview.setAttribute("hx-swap", "outerHTML")
 
-
     sidePanelBody.append(officialReviewHeader)
 
     sidePanelBody.append(officialReview)
-
-
 }
 
 /**
@@ -155,7 +187,7 @@ function addReviews(dinerId, sidePanelBody) {
     let reviewsHeader = document.createElement("div")
 
     reviewsHeader.textContent = "Отзывы от людей"
-    reviewsHeader.className = "side-panel-sub-header"
+    reviewsHeader.className = "side-panel-subheader"
 
     sidePanelBody.append(reviewsHeader)
 
@@ -175,17 +207,17 @@ function addReviews(dinerId, sidePanelBody) {
  * Insert form for leaving a review at the end of sidePanelBody
  *
  * @param sidePanelBody
+ * @param dinerID
  */
 function addReviewForm(sidePanelBody, dinerID) {
     let reviewFormHeader = document.createElement("div")
     reviewFormHeader.textContent = "Оставить отзыв"
-    reviewFormHeader.className = "side-panel-sub-header"
+    reviewFormHeader.className = "side-panel-subheader"
     sidePanelBody.append(reviewFormHeader)
 
     let reviewForm = document.createElement("form")
     reviewForm.setAttribute("hx-post", "/reviews")
     reviewForm.setAttribute("hx-swap", "outerHTML")
-    // reviewForm.setAttribute("hx-include", "#side-panel-header-hidden-id")
     reviewForm.textContent = "Загружаю..."
 
     reviewForm.innerHTML = `
@@ -210,30 +242,9 @@ function addReviewForm(sidePanelBody, dinerID) {
         <button class="submit-button" type="submit">Отправить</button>
     `
 
-
     sidePanelBody.append(reviewForm)
-
 }
 
-/**
- * Map click event handler.
- *
- * - If the user clicked not on the marker, close currently opened diner's information on the side panel.
- *
- * @param obj
- */
-function onMapClick(obj) {
-    // For now disabled, will add close side panel button later, because map click events are unreliable
-    return
-    console.log(obj)
-    if (obj) {
-        if (obj["type"] === "marker"){
-            return
-        }
-    }
-
-    clearDinerSidePanel()
-}
 
 /**
  * Import all classes from Yandex Maps JS API and return them.
@@ -241,7 +252,6 @@ function onMapClick(obj) {
  * @return {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer, YMapDefaultMarker, YMapZoomControl}
  */
 async function initYMapModules() {
-    console.log("map loading")
     await ymaps3.ready;
 
     const {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer} = ymaps3;
@@ -271,15 +281,13 @@ async function setupMap(YMap, YMapDefaultSchemeLayer, YMapControls, YMapZoomCont
             zoom: 5
         }
     });
-
-    map.addChild((scheme = new YMapDefaultSchemeLayer()));
+    let scheme = new YMapDefaultSchemeLayer()
+    map.addChild((scheme));
     map.addChild(new YMapControls({position: 'right'}).addChild(new YMapZoomControl({})));
     map.addChild(new YMapDefaultFeaturesLayer({id: 'features'}));
 
     const mapListener = new YMapListener({
         layer: 'any',
-        onClick: (obj) => {onMapClick(obj)},
-        // onMouseMove: mouseMoveCallback
     });
 
     map.addChild(mapListener)
@@ -302,19 +310,22 @@ async function setupLyceumBuildings(map, YMapMarker) {
             });
         }
         for (let lyceum of lyceumBuildingsData) {
+            let id = lyceum.id
+            let name = lyceum.name
+            let coordinates = lyceum.coordinates
+            let fullAddress = lyceum.full_address
+
             let markerElement = document.createElement("div")
             let markerIcon = document.createElement("img")
+
             markerIcon.src = "/static/images/school.png"
             markerElement.className = "marker lyceum-marker"
             markerElement.appendChild(markerIcon)
-            console.log(lyceum.coordinates)
+
             let placemark = new YMapMarker(
                 {
-                    // source: "featureSource",
                     coordinates: prepareCoordinates(lyceum.coordinates),
-
-                    // draggable: false,
-                    // mapFollowsOnDrag: false
+                    onFastClick: () => {fillLyceumBuildingSidePanel(id, name, coordinates, fullAddress)}
                 },
                 markerElement
             )
@@ -336,7 +347,7 @@ async function setupDiners(map, YMapMarker) {
         for (let diner of dinersData) {
             let id = diner.id
             let name = diner.name
-            let position = diner.position
+            let coordinates = diner.coordinates
             let reviewed = diner.reviewed
 
             let markerElement = document.createElement("div")
@@ -354,8 +365,8 @@ async function setupDiners(map, YMapMarker) {
 
             let placemark = new YMapMarker(
                 {
-                    coordinates: prepareCoordinates(position),
-                    onFastClick: () => {fillDinerSidePanel(id, name, position, reviewed)}
+                    coordinates: prepareCoordinates(coordinates),
+                    onFastClick: () => {fillDinerSidePanel(id, name, coordinates, reviewed)}
                 },
                 markerElement
             )
@@ -378,5 +389,4 @@ async function init(){
 
     await setupLyceumBuildings(map, YMapMarker)
     await setupDiners(map, YMapMarker)
-
 }
