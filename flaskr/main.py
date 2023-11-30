@@ -1,5 +1,7 @@
 from flask import Flask, render_template, Response, request
 from json import dumps
+from requests import get
+from config import API_KEY
 
 app = Flask(__name__)
 
@@ -89,15 +91,31 @@ reviews = [
     {"diner_id": 1, "name": "Keril", "rating": 1, "text": "my friend died here"}
 ]
 
-diners = [
-    {"id": 1, "name": "Cofix", "coordinates": [55.754005, 37.636823]},
-    {"id": 0, "name": "Даблби", "coordinates": [55.754025, 37.635746]},
-    {"id": 3, "name": "Андерсон", "coordinates": [55.783735, 37.632352]},
+diner_names = [
+    {"id": 1, "name": "Cofix"},
+    {"id": 0, "name": "Даблби"},
+    {"id": 3, "name": "Андерсон"},
+]
+
+diner_locations = [
+    {"id": 1, "coordinates": [55.754005, 37.636823]},
+    {"id": 0, "coordinates": [55.754025, 37.635746]},
+    {"id": 3, "coordinates": [55.783735, 37.632352]},
 ]
 
 
 # TODO multiple geographical locations per diner
 # make a id to diner name table and make a diner id to location table
+
+
+def get_address_gps(address: str):
+    # the api key is currently empty
+    request_string = f"https://geocode-maps.yandex.ru/1.x/?apikey={API_KEY}&geocode={address}&format=json"
+    res = get(request_string)
+    if "error" in res.json():
+        return None
+    res = res.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"]
+    print(res)
 
 
 @app.route('/')
@@ -201,4 +219,9 @@ def add_review():
 
 
 if __name__ == "__main__":
+    # get_address_gps("Москва, Китай город, Солянский переулок, 1")
+    # get_address_gps("Москва, Китай город, Цветной бульвар, 1")
+    # get_address_gps("Москва, Китай город, Милютинский переулок, 3")
+    # get_address_gps("Москва, Китай город, Таганская ул., 36, стр. 1")
+    # get_address_gps("Москва, Китай город, Наб. Академика Туполева, 15")
     app.run(host="0.0.0.0", port=80)
