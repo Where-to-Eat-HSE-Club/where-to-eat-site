@@ -11,7 +11,7 @@ templateHeader.innerHTML = `
             <a class="nav-button no-decoration" href="/">Где Поесть?</a>
         </div>
         <div class="header-right">
-            <a class="nav-button no-decoration" href="/blog">Блог</a>
+            <a class="nav-button no-decoration" href="/blog">Обзоры</a>
             <a class="nav-button no-decoration" href="/map">Карта</a>
             <a class="nav-button no-decoration" href="/">Про Нас</a>
         </div>
@@ -26,7 +26,7 @@ templateFooter.innerHTML = `
 
 // <a href="https://www.flaticon.com/free-icons/school" title="school icons">School icons created by Freepik - Flaticon</a>
 // <a href="https://www.flaticon.com/free-icons/shop" title="shop icons">Shop icons created by Eucalyp - Flaticon</a>
-
+// <a href="https://www.flaticon.com/free-icons/pin" title="pin icons">Pin icons created by Freepik - Flaticon</a>
 
 document.body.prepend(templateHeader.content);
 

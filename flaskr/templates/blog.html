@@ -21,6 +21,7 @@
                         <p class="post-header"> {{ post['name'] }} </p>
                         <p class="post-info" > Обзор на {{ post['place_name'] }}, Автор: {{ post['author'] }}, Дата написания: {{ post['creation_date'] }}</p>
                         <p class="post-body"> {{ post['body_text'] }} </p>
+                        <div class="blog-redirect-button-container"><button onclick="redirectToMap({{ post['diner_id'] }})">Открыть на карте</button></div>
                     </div>
 
                 {% endautoescape %}
@@ -28,5 +29,11 @@
 
         </div>
     </div>
+    <script>
+        function redirectToMap(dinerID) {
+            console.log(dinerID)
+            window.location.href = "/map?highlighted_diner_id=" + dinerID;
+        }
+    </script>
 </body>
 </html>

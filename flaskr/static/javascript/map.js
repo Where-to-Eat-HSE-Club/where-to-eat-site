@@ -1,6 +1,15 @@
 // Event for telling HTMX to rebuild all events. (Called after modifying HTML DOM from JS)
 const updateBodyListenersEvent = new Event("updateBodyListeners");
 
+// Selected mode for showing a network of diners:
+//
+// - "center" calculates middle point between all coordinates and centers on it
+// with zoom of 14, works for small to medium distances
+//
+// - "box" calculates bounding box in which all points will fit so they can be shown, works better at all distances
+
+const mapCenterMode = "box" // or "center"
+
 /**
  * Use for delaying some code execution. Usage:
  *
@@ -25,6 +34,7 @@ function reflow(elt){
  * Given latitude and longitude, move the gps point by offset meters up and left.
  *
  * Returns latitude and longitude swapped places because Yandex API messed the order up, duh
+ *
  * @param {[number, number]} coordinates
  * @param {number} offset
  *
@@ -42,9 +52,34 @@ function prepareCoordinates(coordinates, offset= 4) {
 }
 
 /**
+ * Retrieve given URL query parameter from current URL
+ *
+ * @param parameter
+ * @returns {string}
+ */
+function getQueryParam(parameter) {
+    let urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(parameter);
+}
+
+/**
+ * Retrieve current highlighted_diner_id from URL or return null if not specified
+ *
+ * @returns {number|null}
+ */
+function getHighlightedDinerID() {
+    let highlightedDinerId = getQueryParam("highlighted_diner_id");
+    console.log(highlightedDinerId)
+    if (highlightedDinerId == null) {
+        return null
+    }
+    return Number(highlightedDinerId)
+}
+
+/**
  * Fetch all lyceum buildings' coordinates and names from flask endpoint
  *
- * Returns all lyceums in a list like [{"coordinates": [55.752318, 37.637371], "name": "Лицей на Солянке"}]
+ * For returned structure see main.py
  */
 async function getLyceumBuildings() {
     const response = await fetch("/lyceum_buildings");
@@ -52,32 +87,12 @@ async function getLyceumBuildings() {
 }
 
 /**
- * Fill side panel with info about selected lyceum building (name, address, learning areas).
+ * Add htmx requester for studied areas in given lyceum
  *
  * @param lyceumID
- * @param name
- * @param coordinates
- * @param fullAddress
+ * @param sidePanelBody
  */
-function fillLyceumBuildingSidePanel(lyceumID, name, coordinates, fullAddress) {
-    clearDinerSidePanel()
-
-    fillSidePanelHeader(name)
-
-
-    let sidePanelBody = document.querySelector(".side-panel-body")
-
-
-    let sidePanelSubHeader = document.createElement("div")
-    sidePanelSubHeader.className = "side-panel-subheader"
-    sidePanelSubHeader.textContent = "Полный адрес"
-    sidePanelBody.append(sidePanelSubHeader)
-
-    let sidePanelSubHeaderContent = document.createElement("div")
-    sidePanelSubHeaderContent.className = "lyceum-full-address"
-    sidePanelSubHeaderContent.textContent = fullAddress
-    sidePanelBody.append(sidePanelSubHeaderContent)
-
+function addLyceumAreas(lyceumID, sidePanelBody) {
     let lyceumAreasHeader = document.createElement("div")
 
     let lyceumAreas = document.createElement("div")
@@ -97,6 +112,26 @@ function fillLyceumBuildingSidePanel(lyceumID, name, coordinates, fullAddress) {
     lyceumAreas.setAttribute("hx-swap", "innerHTML")
 
     sidePanelBody.append(lyceumAreas)
+}
+
+/**
+ * Fill side panel with info about selected lyceum building (name, address, learning areas).
+ *
+ * @param lyceumID
+ * @param name
+ * @param coordinates
+ * @param fullAddress
+ */
+function fillLyceumBuildingSidePanel(lyceumID, name, coordinates, fullAddress) {
+    clearDinerSidePanel()
+
+    let sidePanelBody = document.querySelector(".side-panel-body")
+
+    fillSidePanelHeader(name)
+
+    addFullAddress(fullAddress, sidePanelBody)
+
+    addLyceumAreas(lyceumID, sidePanelBody)
 
     document.body.dispatchEvent(updateBodyListenersEvent)
 }
@@ -104,7 +139,7 @@ function fillLyceumBuildingSidePanel(lyceumID, name, coordinates, fullAddress) {
 /**
  * Fetch all diners' data from flask endpoint
  *
- * Returns all diners in a list like [{"id": 0, "name": "Cofix", "coordinates": [55.754005, 37.636823], "reviewed": False}]
+ * For returned structure see main.py
  */
 async function getDiners() {
     const response = await fetch("/diners");
@@ -112,7 +147,7 @@ async function getDiners() {
 }
 
 /**
- * Clear all contents of side panel and set header to "please select a new restaurant"
+ * Clear all contents of side panel
  */
 function clearDinerSidePanel() {
     let sidePanelHeader = document.querySelector(".side-panel-header")
@@ -122,11 +157,29 @@ function clearDinerSidePanel() {
     sidePanelBody.innerHTML = ""
 }
 
+/**
+ * Remove highlighted class from all map points
+ */
+function disablePointsHighlighting() {
+    let points = document.querySelectorAll(".highlighted")
+    points.forEach((point) => {
+        point.classList.remove("highlighted")
+    })
+}
+
+/**
+ * Change side panel header to default "click on anything to select it"
+ */
 function fillEmptySidePanelHeader() {
     let sidePanelHeader = document.querySelector(".side-panel-header")
     sidePanelHeader.textContent = "Кликните по любому ресторану или зданию лицея, чтобы открыть информацию о нём."
 }
 
+/**
+ * Change side panel header to given headerText and add a close button to the top left
+ *
+ * @param headerText
+ */
 function fillSidePanelHeader(headerText) {
     let sidePanelHeader = document.querySelector(".side-panel-header")
 
@@ -141,10 +194,32 @@ function fillSidePanelHeader(headerText) {
     sidePanelCloseButton.textContent = "✖"
     sidePanelCloseButton.addEventListener("click", () => {
         clearDinerSidePanel()
+        disablePointsHighlighting()
         fillEmptySidePanelHeader()
         }
     )
     sidePanelHeader.append(sidePanelCloseButton)
+}
+
+/**
+ * Fill side panel with info about selected diner network
+ * (name, address text saying a diner network is selected and official review)
+ *
+ * @param dinerID
+ * @param dinerName
+ */
+function fillDinerNetworkSidePanel(dinerID, dinerName) {
+    clearDinerSidePanel()
+
+    let sidePanelBody = document.querySelector(".side-panel-body")
+
+    fillSidePanelHeader(dinerName)
+
+    addFullAddress(`Выделены все локации "${dinerName}"`, sidePanelBody)
+
+    addOfficialReview(dinerID, true, sidePanelBody)
+
+    document.body.dispatchEvent(updateBodyListenersEvent)
 }
 
 /**
@@ -164,18 +239,7 @@ function fillDinerSidePanel(dinerID, dinerName, coordinates, reviewed, fullAddre
 
     let sidePanelBody = document.querySelector(".side-panel-body")
 
-
-    let sidePanelAddressHeader = document.createElement("div")
-    sidePanelAddressHeader.className = "side-panel-subheader"
-    sidePanelAddressHeader.textContent = "Полный адрес"
-
-    let sidePanelAddress = document.createElement("div")
-    sidePanelAddress.className = "lyceum-full-address"
-    sidePanelAddress.textContent = fullAddress
-
-    sidePanelBody.append(sidePanelAddressHeader)
-    sidePanelBody.append(sidePanelAddress)
-
+    addFullAddress(fullAddress, sidePanelBody)
 
     addOfficialReview(dinerID, reviewed, sidePanelBody)
 
@@ -187,7 +251,24 @@ function fillDinerSidePanel(dinerID, dinerName, coordinates, reviewed, fullAddre
 }
 
 /**
- * Insert official review at the start of sidePanelBody
+ * Add address header ans subheader to side panel
+ * @param fullAddress
+ * @param sidePanelBody
+ */
+function addFullAddress(fullAddress, sidePanelBody) {
+    let sidePanelAddressHeader = document.createElement("div")
+    sidePanelAddressHeader.className = "side-panel-subheader"
+    sidePanelAddressHeader.textContent = "Полный адрес"
+
+    let sidePanelAddress = document.createElement("div")
+    sidePanelAddress.className = "lyceum-full-address"
+    sidePanelAddress.textContent = fullAddress
+
+    sidePanelBody.append(sidePanelAddressHeader)
+    sidePanelBody.append(sidePanelAddress)
+}
+/**
+ * Add official review to sidePanelBody
  *
  * @param dinerID
  * @param reviewed
@@ -215,7 +296,7 @@ function addOfficialReview(dinerID, reviewed, sidePanelBody) {
 }
 
 /**
- * Insert all diner reviews at the end of sidePanelBody
+ * Add all diner reviews to sidePanelBody
  *
  * @param placeID
  * @param sidePanelBody
@@ -243,7 +324,7 @@ function addReviews(placeID, sidePanelBody) {
 }
 
 /**
- * Insert form for leaving a review at the end of sidePanelBody
+ * Add form for leaving a review to sidePanelBody
  *
  * @param sidePanelBody
  * @param placeID
@@ -286,7 +367,7 @@ function addReviewForm(sidePanelBody, placeID) {
 
 
 /**
- * Import all classes from Yandex Maps JS API and return them.
+ * Import all used classes from Yandex Maps JS API and return them.
  *
  * @return {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer, YMapDefaultMarker, YMapZoomControl}
  */
@@ -343,10 +424,13 @@ async function setupMap(YMap, YMapDefaultSchemeLayer, YMapControls, YMapZoomCont
 async function setupLyceumBuildings(map, YMapMarker) {
     getLyceumBuildings().then((lyceumBuildingsData) => {
         if (lyceumBuildingsData != null) {
+            let boundingBox = calculateBoundingBox(lyceumBuildingsData, null)
             map.setLocation({
-              center: prepareCoordinates(lyceumBuildingsData[0].coordinates),
-              zoom: 15
-            });
+                bounds: [
+                    [boundingBox.minLongitude, boundingBox.minLatitude],
+                    [boundingBox.maxLongitude, boundingBox.maxLatitude]
+                ]
+            })
         }
         for (let lyceum of lyceumBuildingsData) {
             let id = lyceum.id
@@ -375,14 +459,132 @@ async function setupLyceumBuildings(map, YMapMarker) {
 }
 
 /**
- * Add all diners markers to the map.
+ * Take all coordinates from given diners (filtered by targetDinerID) and find average center point between them
+ *
+ * @param diners
+ * @param targetDinerID
+ * @returns {number[]|null}
+ */
+function calculateAverageCoordinate(diners, targetDinerID) {
+    const filteredDiners = diners.filter(diner => diner.diner_id === targetDinerID);
+
+    if (filteredDiners.length === 0) {
+        return null;
+    }
+
+    let sumLat = 0;
+    let sumLong = 0;
+
+    for (const diner of filteredDiners) {
+        const coordinates = diner.coordinates;
+
+        sumLat += coordinates[0];
+        sumLong += coordinates[1];
+    }
+
+    const avgLat = sumLat / filteredDiners.length;
+    const avgLong = sumLong / filteredDiners.length;
+
+    return [avgLong, avgLat];
+}
+
+/**
+ * Take all coordinates from given diners (filtered by targetDinerID) and find box corners that fit all of points.
+ *
+ * @param points
+ * @param targetDinerID
+ * @returns {{maxLongitude: number, minLatitude: number, minLongitude: number, maxLatitude: number}|null}
+ */
+function calculateBoundingBox(points, targetDinerID) {
+    let filteredPoints = [];
+    if (targetDinerID !== null){
+        filteredPoints = points.filter(diner => diner.diner_id === targetDinerID);
+    } else {
+        filteredPoints = points
+    }
+
+    if (filteredPoints.length === 0) {
+        return null;
+    }
+
+    let minLat = filteredPoints[0].coordinates[0];
+    let maxLat = filteredPoints[0].coordinates[0];
+    let minLong = filteredPoints[0].coordinates[1];
+    let maxLong = filteredPoints[0].coordinates[1];
+
+    for (const point of filteredPoints) {
+        const coordinates = point.coordinates;
+
+        minLat = Math.min(minLat, coordinates[0]);
+        maxLat = Math.max(maxLat, coordinates[0]);
+        minLong = Math.min(minLong, coordinates[1]);
+        maxLong = Math.max(maxLong, coordinates[1]);
+    }
+
+    return {
+        minLatitude: minLat,
+        maxLatitude: maxLat,
+        minLongitude: minLong,
+        maxLongitude: maxLong,
+    };
+}
+
+/**
+ * Select all markers that need highlighting and enable jumping animation on them
+ */
+function animateHighlightedMarkers() {
+    const placemarks = document.querySelectorAll('.highlighted');
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            // FIXME extra classes on now unused points,
+            //  change to unsubscribing point from the observer
+            //  when removing the highlighted class in disablePointsHighlighting
+            //  instead keeping the now not highlighted points listening
+
+            if (entry.target.classList.contains("highlighted")){
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('jumping-marker');
+                } else {
+                    entry.target.classList.remove('jumping-marker');
+                }
+            }
+        });
+    });
+
+    placemarks.forEach(placemark => {
+        observer.observe(placemark);
+    });
+}
+
+
+/**
+ * Add all diners markers to the map
  *
  * @param map
  * @param YMapMarker
  * @return {Promise<void>}
  */
 async function setupDiners(map, YMapMarker) {
+    const highlightedDinerID = getHighlightedDinerID()
+    let mapCenter = [0, 0]
+    let boundingBox = {}
+    let dinerNetworkName = null
     getDiners().then((dinersData) => {
+        if (highlightedDinerID != null) {
+            switch (mapCenterMode) {
+                case "box":
+                    boundingBox = calculateBoundingBox(dinersData, highlightedDinerID);
+                    break;
+                case "center":
+                    mapCenter = calculateAverageCoordinate(dinersData, highlightedDinerID);
+                    break;
+                default:
+                    console.error("Map selection mode not set... Using average coordinates")
+                    mapCenter = calculateAverageCoordinate(dinersData, highlightedDinerID)
+                    break;
+            }
+        }
         for (let diner of dinersData) {
             let placeID = diner.id
             let dinerID = diner.diner_id
@@ -394,13 +596,19 @@ async function setupDiners(map, YMapMarker) {
             let markerElement = document.createElement("div")
             let markerIcon = document.createElement("img")
 
+            markerElement.className = "marker diner-marker"
             if (reviewed){
                 markerIcon.src = "/static/images/restaurant_colored.png"
+                if (highlightedDinerID === dinerID) {
+                    console.log("highlighting marker", markerElement)
+                    dinerNetworkName = name
+                    markerElement.className += " highlighted"
+                    console.log(markerElement.className)
+                }
             } else {
                 markerIcon.src = "/static/images/restaurant.png"
             }
 
-            markerElement.className = "marker diner-marker"
             markerElement.appendChild(markerIcon)
 
 
@@ -413,6 +621,35 @@ async function setupDiners(map, YMapMarker) {
             )
             map.addChild(placemark)
         }
+        if (highlightedDinerID != null) {
+            switch (mapCenterMode) {
+                case "box":
+                    map.setLocation({
+                        bounds: [
+                            [boundingBox.minLongitude, boundingBox.minLatitude],
+                            [boundingBox.maxLongitude, boundingBox.maxLatitude]
+                        ]
+                    })
+                    break;
+                case "center":
+                    map.setLocation({
+                        center: mapCenter,
+                        zoom: 14
+                    });
+                    break;
+                default:
+                    console.error("Map selection mode not set... Using average coordinates")
+                    map.setLocation({
+                        center: mapCenter,
+                        zoom: 14
+                    });
+                    break;
+            }
+
+            animateHighlightedMarkers()
+            fillDinerNetworkSidePanel(highlightedDinerID, dinerNetworkName)
+        }
+
     })
 }
 
@@ -431,3 +668,6 @@ async function init(){
     await setupLyceumBuildings(map, YMapMarker)
     await setupDiners(map, YMapMarker)
 }
+
+
+// TODO add "open all diners from same network" button on diner side panel that works like the one on blog page

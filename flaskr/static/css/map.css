@@ -41,6 +41,14 @@ body {
 
 }
 
+.highlighted {
+    border-style: solid;
+    border-radius: 10px;
+    border-color: red;
+    scale: 1.5;
+    transition: scale 1s;
+}
+
 .map-header {
     text-align: center;
     font-size: 36px;
@@ -54,3 +62,18 @@ body {
     border-right-width: 3px;
 }
 
+@keyframes jump {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+}
+
+.jumping-marker {
+  animation: jump 1s;
+}

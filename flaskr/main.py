@@ -102,9 +102,13 @@ diner_names = [
 
 diner_locations = [
     {"id": 0, "diner_id": 1, "coordinates": [55.754005, 37.636823], "full_address": "улица Солянка, 2/6"},
+    {"id": 6, "diner_id": 0, "coordinates": [55.767762, 37.620743], "full_address": "Цветной бульвар, 1"},
+    {"id": 7, "diner_id": 0, "coordinates": [55.761507, 37.631424], "full_address": "Милютинский переулок, 3"},
     {"id": 1, "diner_id": 0, "coordinates": [55.754025, 37.635746], "full_address": "Солянский проезд, 1"},
     {"id": 2, "diner_id": 3, "coordinates": [55.783735, 37.632352], "full_address": "улица Гиляровского, 39с3"},
     {"id": 3, "diner_id": 3, "coordinates": [55.784906, 37.66115], "full_address": "Верхняя Красносельская улица, 7с2"},
+    {"id": 4, "diner_id": 3, "coordinates": [55.760697, 37.682179], "full_address": "Наб. Академика Туполева, 15"},
+    {"id": 5, "diner_id": 3, "coordinates": [55.739421, 37.666310], "full_address": "Таганская ул., 36, стр. 1"},
 ]
 
 
@@ -133,6 +137,8 @@ def map_page():
 
 @app.route('/blog')
 def blog_page():
+    args = request.args
+    print(args)
     return render_template("blog.html", posts=posts_dict)
 
 
