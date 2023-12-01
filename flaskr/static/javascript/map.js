@@ -62,8 +62,8 @@ async function getLyceumBuildings() {
 function fillLyceumBuildingSidePanel(lyceumID, name, coordinates, fullAddress) {
     clearDinerSidePanel()
 
-    let sidePanelHeader = document.querySelector(".side-panel-header")
-    sidePanelHeader.textContent = name
+    fillSidePanelHeader(name)
+
 
     let sidePanelBody = document.querySelector(".side-panel-body")
 
@@ -116,10 +116,35 @@ async function getDiners() {
  */
 function clearDinerSidePanel() {
     let sidePanelHeader = document.querySelector(".side-panel-header")
-    sidePanelHeader.textContent = "Кликните по любому ресторану или зданию лицея, чтобы открыть информацию о нём."
+    sidePanelHeader.textContent = ""
 
     let sidePanelBody = document.querySelector(".side-panel-body")
     sidePanelBody.innerHTML = ""
+}
+
+function fillEmptySidePanelHeader() {
+    let sidePanelHeader = document.querySelector(".side-panel-header")
+    sidePanelHeader.textContent = "Кликните по любому ресторану или зданию лицея, чтобы открыть информацию о нём."
+}
+
+function fillSidePanelHeader(headerText) {
+    let sidePanelHeader = document.querySelector(".side-panel-header")
+
+    let sidePanelHeaderText = document.createElement("div")
+    sidePanelHeaderText.className = "side-panel-header-text"
+    sidePanelHeaderText.textContent = headerText
+
+    sidePanelHeader.append(sidePanelHeaderText)
+
+    let sidePanelCloseButton = document.createElement("button")
+    sidePanelCloseButton.className = "side-panel-close-button"
+    sidePanelCloseButton.textContent = "✖"
+    sidePanelCloseButton.addEventListener("click", () => {
+        clearDinerSidePanel()
+        fillEmptySidePanelHeader()
+        }
+    )
+    sidePanelHeader.append(sidePanelCloseButton)
 }
 
 /**
@@ -135,8 +160,7 @@ function clearDinerSidePanel() {
 function fillDinerSidePanel(dinerID, dinerName, coordinates, reviewed, fullAddress, placeID) {
     clearDinerSidePanel()
 
-    let sidePanelHeader = document.querySelector(".side-panel-header")
-    sidePanelHeader.textContent = dinerName
+    fillSidePanelHeader(dinerName)
 
     let sidePanelBody = document.querySelector(".side-panel-body")
 
