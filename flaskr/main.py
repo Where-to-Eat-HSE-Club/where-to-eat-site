@@ -2,8 +2,6 @@
 
 from flask import Flask, render_template, Response, request
 from json import dumps
-from requests import get
-from config import API_KEY
 
 app = Flask(__name__)
 
@@ -110,19 +108,6 @@ diner_locations = [
     {"id": 4, "diner_id": 3, "coordinates": [55.760697, 37.682179], "full_address": "Наб. Академика Туполева, 15"},
     {"id": 5, "diner_id": 3, "coordinates": [55.739421, 37.666310], "full_address": "Таганская ул., 36, стр. 1"},
 ]
-
-
-def get_address_gps(address: str):
-    # the api key is currently empty
-    request_string = f"https://geocode-maps.yandex.ru/1.x/?apikey={API_KEY}&geocode={address}&format=json"
-    res = get(request_string)
-    if "error" in res.json():
-        return None
-    res = res.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"]
-    lat = res.split(" ")[1]
-    lon = res.split(" ")[0]
-    print(lat, lon)
-    return [lat, lon]
 
 
 @app.route('/')
