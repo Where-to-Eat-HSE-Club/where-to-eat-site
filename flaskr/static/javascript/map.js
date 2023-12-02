@@ -1,12 +1,12 @@
 // Event for telling HTMX to rebuild all events. (Called after modifying HTML DOM from JS)
-const updateBodyListenersEvent = new Event("updateBodyListeners");
+const updateBodyListenersEvent = new Event("updateBodyListeners")
 
 // Selected mode for showing a network of diners:
 //
 // - "center" calculates middle point between all coordinates and centers on it
 // with zoom of 14, works for small to medium distances
 //
-// - "box" calculates bounding box in which all points will fit so they can be shown, works better at all distances
+// - "box" calculates bounding box in which all points will fit, so they can be shown, works better at all distances
 
 const mapCenterMode = "box" // or "center"
 
@@ -17,7 +17,7 @@ const mapCenterMode = "box" // or "center"
  * @param {number} ms milliseconds to delay
  */
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -26,8 +26,8 @@ function sleep(ms) {
  *
  * @param {HTMLElement} elt
  */
-function reflow(elt){
-    console.log(elt.offsetHeight);
+function reflow(elt) {
+    console.log(elt.offsetHeight)
 }
 
 /**
@@ -58,12 +58,15 @@ function prepareCoordinates(coordinates, offset= 4) {
  * @returns {string}
  */
 function getQueryParam(parameter) {
-    let urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(parameter);
+    let urlParams = new URLSearchParams(window.location.search)
+    return urlParams.get(parameter)
 }
 
+/**
+ * Remove all query parameters from current URL
+ */
 function removeQueryParams() {
-    window.history.pushState({}, document.title, window.location.pathname);
+    window.history.pushState({}, document.title, window.location.pathname)
 }
 
 /**
@@ -72,7 +75,7 @@ function removeQueryParams() {
  * @returns {number|null}
  */
 function getHighlightedDinerID() {
-    let highlightedDinerId = getQueryParam("highlighted_diner_id");
+    let highlightedDinerId = getQueryParam("highlighted_diner_id")
     console.log(highlightedDinerId)
     if (highlightedDinerId == null) {
         return null
@@ -86,7 +89,7 @@ function getHighlightedDinerID() {
  * For returned structure see main.py
  */
 async function getLyceumBuildings() {
-    const response = await fetch("/lyceum_buildings");
+    const response = await fetch("/lyceum_buildings")
     return await response.json()
 }
 
@@ -106,7 +109,7 @@ function addLyceumAreas(lyceumID, sidePanelBody) {
 
     sidePanelBody.append(lyceumAreasHeader)
 
-    let lyceumAreasUrl = "/lyceum_buildings/" + lyceumID;
+    let lyceumAreasUrl = "/lyceum_buildings/" + lyceumID
 
     lyceumAreas.className = "lyceum-areas"
     lyceumAreas.textContent = "Загружаю..."
@@ -146,7 +149,7 @@ function fillLyceumBuildingSidePanel(lyceumID, name, coordinates, fullAddress) {
  * For returned structure see main.py
  */
 async function getDiners() {
-    const response = await fetch("/diners");
+    const response = await fetch("/diners")
     return await response.json()
 }
 
@@ -273,6 +276,7 @@ function addFullAddress(fullAddress, sidePanelBody) {
     sidePanelBody.append(sidePanelAddressHeader)
     sidePanelBody.append(sidePanelAddress)
 }
+
 /**
  * Add official review and network redirect button to sidePanelBody
  *
@@ -305,9 +309,7 @@ function addOfficialReview(dinerID, reviewed, sidePanelBody, dinerName) {
         officialReviewHeader.append(officialReviewHeaderNetworkButton)
     }
 
-
-
-    let reviewUrl = "/official_review/" + dinerID;
+    let reviewUrl = "/official_review/" + dinerID
 
     officialReview.textContent = "Загружаю..."
     officialReview.className = "official-review"
@@ -337,7 +339,7 @@ function addReviews(placeID, sidePanelBody) {
 
     sidePanelBody.append(reviewsHeader)
 
-    let reviewsUrl = "/reviews/" + placeID;
+    let reviewsUrl = "/reviews/" + placeID
 
     reviews.className = "reviews"
     reviews.textContent = "Загружаю..."
@@ -391,19 +393,18 @@ function addReviewForm(sidePanelBody, placeID) {
     sidePanelBody.append(reviewForm)
 }
 
-
 /**
  * Import all used classes from Yandex Maps JS API and return them.
  *
  * @return {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer, YMapDefaultMarker, YMapZoomControl}
  */
 async function initYMapModules() {
-    await ymaps3.ready;
+    await ymaps3.ready
 
-    const {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer} = ymaps3;
+    const {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer} = ymaps3
 
-    const {YMapDefaultMarker} = await ymaps3.import('@yandex/ymaps3-markers@0.0.1');
-    const {YMapZoomControl} = await ymaps3.import('@yandex/ymaps3-controls@0.0.1');
+    const {YMapDefaultMarker} = await ymaps3.import('@yandex/ymaps3-markers@0.0.1')
+    const {YMapZoomControl} = await ymaps3.import('@yandex/ymaps3-controls@0.0.1')
 
     return {YMap, YMapDefaultSchemeLayer, YMapMarker, YMapControls, YMapListener, YMapDefaultFeaturesLayer, YMapDefaultMarker, YMapZoomControl}
 }
@@ -426,15 +427,15 @@ async function setupMap(YMap, YMapDefaultSchemeLayer, YMapControls, YMapZoomCont
             center: [55.752630, 37.623130],
             zoom: 5
         }
-    });
+    })
     let scheme = new YMapDefaultSchemeLayer()
-    map.addChild((scheme));
-    map.addChild(new YMapControls({position: 'right'}).addChild(new YMapZoomControl({})));
-    map.addChild(new YMapDefaultFeaturesLayer({id: 'features'}));
+    map.addChild((scheme))
+    map.addChild(new YMapControls({position: 'right'}).addChild(new YMapZoomControl({})))
+    map.addChild(new YMapDefaultFeaturesLayer({id: 'features'}))
 
     const mapListener = new YMapListener({
         layer: 'any',
-    });
+    })
 
     map.addChild(mapListener)
     return map
@@ -483,7 +484,7 @@ async function setupLyceumBuildings(map, YMapMarker) {
                 markerElement
             )
 
-            map.addChild(placemark);
+            map.addChild(placemark)
         }
     })
 }
@@ -496,26 +497,26 @@ async function setupLyceumBuildings(map, YMapMarker) {
  * @returns {number[]|null}
  */
 function calculateAverageCoordinate(diners, targetDinerID) {
-    const filteredDiners = diners.filter(diner => diner.diner_id === targetDinerID);
+    const filteredDiners = diners.filter(diner => diner.diner_id === targetDinerID)
 
     if (filteredDiners.length === 0) {
-        return null;
+        return null
     }
 
-    let sumLat = 0;
-    let sumLong = 0;
+    let sumLat = 0
+    let sumLong = 0
 
     for (const diner of filteredDiners) {
-        const coordinates = diner.coordinates;
+        const coordinates = diner.coordinates
 
-        sumLat += coordinates[0];
-        sumLong += coordinates[1];
+        sumLat += coordinates[0]
+        sumLong += coordinates[1]
     }
 
-    const avgLat = sumLat / filteredDiners.length;
-    const avgLong = sumLong / filteredDiners.length;
+    const avgLat = sumLat / filteredDiners.length
+    const avgLong = sumLong / filteredDiners.length
 
-    return [avgLong, avgLat];
+    return [avgLong, avgLat]
 }
 
 /**
@@ -526,29 +527,29 @@ function calculateAverageCoordinate(diners, targetDinerID) {
  * @returns {{maxLongitude: number, minLatitude: number, minLongitude: number, maxLatitude: number}|null}
  */
 function calculateBoundingBox(points, targetDinerID) {
-    let filteredPoints = [];
+    let filteredPoints = []
     if (targetDinerID !== null){
-        filteredPoints = points.filter(diner => diner.diner_id === targetDinerID);
+        filteredPoints = points.filter(diner => diner.diner_id === targetDinerID)
     } else {
         filteredPoints = points
     }
 
     if (filteredPoints.length === 0) {
-        return null;
+        return null
     }
 
-    let minLat = filteredPoints[0].coordinates[0];
-    let maxLat = filteredPoints[0].coordinates[0];
-    let minLong = filteredPoints[0].coordinates[1];
-    let maxLong = filteredPoints[0].coordinates[1];
+    let minLat = filteredPoints[0].coordinates[0]
+    let maxLat = filteredPoints[0].coordinates[0]
+    let minLong = filteredPoints[0].coordinates[1]
+    let maxLong = filteredPoints[0].coordinates[1]
 
     for (const point of filteredPoints) {
-        const coordinates = point.coordinates;
+        const coordinates = point.coordinates
 
-        minLat = Math.min(minLat, coordinates[0]);
-        maxLat = Math.max(maxLat, coordinates[0]);
-        minLong = Math.min(minLong, coordinates[1]);
-        maxLong = Math.max(maxLong, coordinates[1]);
+        minLat = Math.min(minLat, coordinates[0])
+        maxLat = Math.max(maxLat, coordinates[0])
+        minLong = Math.min(minLong, coordinates[1])
+        maxLong = Math.max(maxLong, coordinates[1])
     }
 
     return {
@@ -556,14 +557,14 @@ function calculateBoundingBox(points, targetDinerID) {
         maxLatitude: maxLat,
         minLongitude: minLong,
         maxLongitude: maxLong,
-    };
+    }
 }
 
 /**
  * Select all markers that need highlighting and enable jumping animation on them
  */
 function animateHighlightedMarkers() {
-    const placemarks = document.querySelectorAll('.highlighted');
+    const placemarks = document.querySelectorAll('.highlighted')
 
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
@@ -574,17 +575,17 @@ function animateHighlightedMarkers() {
 
             if (entry.target.classList.contains("highlighted")){
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('jumping-marker');
+                    entry.target.classList.add('jumping-marker')
                 } else {
-                    entry.target.classList.remove('jumping-marker');
+                    entry.target.classList.remove('jumping-marker')
                 }
             }
-        });
-    });
+        })
+    })
 
     placemarks.forEach(placemark => {
-        observer.observe(placemark);
-    });
+        observer.observe(placemark)
+    })
 }
 
 
@@ -605,15 +606,15 @@ async function setupDiners(map, YMapMarker) {
         if (highlightedDinerID != null) {
             switch (mapCenterMode) {
                 case "box":
-                    boundingBox = calculateBoundingBox(dinersData, highlightedDinerID);
-                    break;
+                    boundingBox = calculateBoundingBox(dinersData, highlightedDinerID)
+                    break
                 case "center":
-                    mapCenter = calculateAverageCoordinate(dinersData, highlightedDinerID);
-                    break;
+                    mapCenter = calculateAverageCoordinate(dinersData, highlightedDinerID)
+                    break
                 default:
                     console.error("Map selection mode not set... Using average coordinates")
                     mapCenter = calculateAverageCoordinate(dinersData, highlightedDinerID)
-                    break;
+                    break
             }
         }
         for (let diner of dinersData) {
@@ -667,20 +668,20 @@ async function setupDiners(map, YMapMarker) {
                             [boundingBox.maxLongitude, boundingBox.maxLatitude]
                         ]
                     })
-                    break;
+                    break
                 case "center":
                     map.setLocation({
                         center: mapCenter,
                         zoom: 14
-                    });
-                    break;
+                    })
+                    break
                 default:
                     console.error("Map selection mode not set... Using average coordinates")
                     map.setLocation({
                         center: mapCenter,
                         zoom: 14
-                    });
-                    break;
+                    })
+                    break
             }
 
             animateHighlightedMarkers()
