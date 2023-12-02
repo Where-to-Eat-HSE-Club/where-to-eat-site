@@ -10,6 +10,9 @@ const updateBodyListenersEvent = new Event("updateBodyListeners");
 
 const mapCenterMode = "box" // or "center"
 
+let dinerMarkers = []
+
+
 /**
  * Use for delaying some code execution. Usage:
  *
@@ -241,7 +244,7 @@ function fillDinerSidePanel(dinerID, dinerName, coordinates, reviewed, fullAddre
 
     addFullAddress(fullAddress, sidePanelBody)
 
-    addOfficialReview(dinerID, reviewed, sidePanelBody)
+    addOfficialReview(dinerID, reviewed, sidePanelBody, dinerName)
 
     addReviews(placeID, sidePanelBody)
 
@@ -274,12 +277,22 @@ function addFullAddress(fullAddress, sidePanelBody) {
  * @param reviewed
  * @param sidePanelBody
  */
-function addOfficialReview(dinerID, reviewed, sidePanelBody) {
+function addOfficialReview(dinerID, reviewed, sidePanelBody, dinerName) {
     let officialReviewHeader =  document.createElement("div")
+    let officialReviewHeaderText = document.createElement("div")
+    let officialReviewHeaderNetworkButton = document.createElement("button")
+
     let officialReview = document.createElement("div")
 
-    officialReviewHeader.textContent = "Наш Обзор"
-    officialReviewHeader.className = "side-panel-subheader"
+    officialReviewHeaderText.textContent = "Наш Обзор"
+    officialReviewHeaderText.className = "side-panel-subheader"
+    officialReviewHeader.append(officialReviewHeaderText)
+
+    officialReviewHeaderNetworkButton.className = "official-review-network-button"
+    officialReviewHeaderNetworkButton.textContent = `Показать все ${dinerName}`
+    officialReviewHeaderNetworkButton.addEventListener("click", () => {
+        // fillDinerNetworkSidePanel(dinerID, dinerName)
+    })
 
     let reviewUrl = "/official_review/" + dinerID;
 
@@ -557,6 +570,13 @@ function animateHighlightedMarkers() {
     });
 }
 
+function getDinerNetworkName(diners, targetDinerID) {
+    const filteredDiners = diners.filter(diner => diner.diner_id == targetDinerID);
+    if (filteredDiners.length === 0) {
+        return null;
+    }
+    return filteredDiners[0].name
+}
 
 /**
  * Add all diners markers to the map
@@ -566,25 +586,7 @@ function animateHighlightedMarkers() {
  * @return {Promise<void>}
  */
 async function setupDiners(map, YMapMarker) {
-    const highlightedDinerID = getHighlightedDinerID()
-    let mapCenter = [0, 0]
-    let boundingBox = {}
-    let dinerNetworkName = null
     getDiners().then((dinersData) => {
-        if (highlightedDinerID != null) {
-            switch (mapCenterMode) {
-                case "box":
-                    boundingBox = calculateBoundingBox(dinersData, highlightedDinerID);
-                    break;
-                case "center":
-                    mapCenter = calculateAverageCoordinate(dinersData, highlightedDinerID);
-                    break;
-                default:
-                    console.error("Map selection mode not set... Using average coordinates")
-                    mapCenter = calculateAverageCoordinate(dinersData, highlightedDinerID)
-                    break;
-            }
-        }
         for (let diner of dinersData) {
             let placeID = diner.id
             let dinerID = diner.diner_id
@@ -599,19 +601,15 @@ async function setupDiners(map, YMapMarker) {
             markerElement.className = "marker diner-marker"
             if (reviewed){
                 markerIcon.src = "/static/images/restaurant_colored.png"
-                if (highlightedDinerID === dinerID) {
-                    console.log("highlighting marker", markerElement)
-                    dinerNetworkName = name
-                    markerElement.className += " highlighted"
-                    console.log(markerElement.className)
-                }
             } else {
                 markerIcon.src = "/static/images/restaurant.png"
             }
 
             markerElement.appendChild(markerIcon)
-
-
+            markerElement.setAttribute("data-placeID", dinerID)
+            console.log(dinerMarkers)
+            dinerMarkers.push(markerElement)
+            console.log(dinerMarkers)
             let placemark = new YMapMarker(
                 {
                     coordinates: prepareCoordinates(coordinates),
@@ -621,36 +619,72 @@ async function setupDiners(map, YMapMarker) {
             )
             map.addChild(placemark)
         }
+        let highlightedDinerID = getHighlightedDinerID()
         if (highlightedDinerID != null) {
-            switch (mapCenterMode) {
-                case "box":
-                    map.setLocation({
-                        bounds: [
-                            [boundingBox.minLongitude, boundingBox.minLatitude],
-                            [boundingBox.maxLongitude, boundingBox.maxLatitude]
-                        ]
-                    })
-                    break;
-                case "center":
-                    map.setLocation({
-                        center: mapCenter,
-                        zoom: 14
-                    });
-                    break;
-                default:
-                    console.error("Map selection mode not set... Using average coordinates")
-                    map.setLocation({
-                        center: mapCenter,
-                        zoom: 14
-                    });
-                    break;
-            }
-
+            centerCameraOnNetworkDiners(map, dinersData)
+            highlightNetworkDiners()
             animateHighlightedMarkers()
-            fillDinerNetworkSidePanel(highlightedDinerID, dinerNetworkName)
+            fillDinerNetworkSidePanel(highlightedDinerID, getDinerNetworkName(dinersData, highlightedDinerID))
         }
 
     })
+}
+
+function openDinerNetwork(placeID) {
+    centerCameraOnNetworkDiners(map, dinersData)
+    highlightNetworkDiners()
+    animateHighlightedMarkers()
+    fillDinerNetworkSidePanel(highlightedDinerID, getDinerNetworkName(dinersData, highlightedDinerID))
+}
+
+function highlightNetworkDiners() {
+    // window.location.pathname
+    const highlightedDinerID = getHighlightedDinerID()
+
+    let dinerMarkers = document.querySelectorAll('.diner-marker')
+
+    dinerMarkers.forEach(dinerMarker => {
+        const placeID = dinerMarker.getAttribute("data-placeID");
+        console.log(placeID)
+        if (placeID == highlightedDinerID) {
+            dinerMarker.classList.add('highlighted');
+        } else {
+            dinerMarker.classList.remove('highlighted')
+        }
+    });
+}
+function centerCameraOnNetworkDiners(map, allDiners) {
+    console.log("centering camera: ", map, allDiners)
+    const highlightedDinerID = getHighlightedDinerID()
+    let mapCenter = [0, 0]
+    let boundingBox = {}
+
+    switch (mapCenterMode) {
+        case "box":
+            boundingBox = calculateBoundingBox(allDiners, highlightedDinerID);
+            map.setLocation({
+                bounds: [
+                    [boundingBox.minLongitude, boundingBox.minLatitude],
+                    [boundingBox.maxLongitude, boundingBox.maxLatitude]
+                ]
+            })
+            break;
+        case "center":
+            mapCenter = calculateAverageCoordinate(allDiners, highlightedDinerID);
+            map.setLocation({
+                center: mapCenter,
+                zoom: 14
+            });
+            break;
+        default:
+            console.error("Map selection mode not set... Using average coordinates")
+            mapCenter = calculateAverageCoordinate(allDiners, highlightedDinerID)
+            map.setLocation({
+                center: mapCenter,
+                zoom: 14
+            });
+            break;
+    }
 }
 
 /**
