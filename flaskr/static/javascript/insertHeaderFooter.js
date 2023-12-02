@@ -8,12 +8,12 @@ templateHeader.innerHTML = `
     <div class="header">
         <div class="header-left">
             <img src="/static/images/where-to-eat-logo.png" alt="Site Logo">
-            <a class="nav-button no-decoration" href="/">Где Поесть?</a>
+            <a class="nav-button no-decoration" href="/"><div class="nav-button-text">Где Поесть?</div></a>
         </div>
         <div class="header-right">
-            <a class="nav-button no-decoration" href="/blog">Обзоры</a>
-            <a class="nav-button no-decoration" href="/map">Карта</a>
-            <a class="nav-button no-decoration" href="/">Про Нас</a>
+            <a class="nav-button no-decoration" href="/blog"><div class="nav-button-text">Обзоры</div></a>
+            <a class="nav-button no-decoration" href="/map"><div class="nav-button-text">Карта</div></a>
+            <a class="nav-button no-decoration" href="/"><div class="nav-button-text">Про Нас</div></a>
         </div>
     </div>
 `;

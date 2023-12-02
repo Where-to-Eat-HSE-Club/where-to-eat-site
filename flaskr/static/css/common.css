@@ -41,13 +41,14 @@ html, body {
 .header-left {
     display: flex;
     align-items: center;
+    height: 100%;
 
 }
 
 .header-right {
     display: flex;
     align-items: center;
-    gap: 24px;
+    height: 100%;
 
 }
 
@@ -60,8 +61,15 @@ img {
 .nav-button {
     color: black;
     font-family: "CirceBold", serif;
+    padding: 0 20px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 36px;
-    padding: 10px;
+
+}
+.nav-button-text {
 }
 
 .nav-button:hover {
@@ -70,6 +78,5 @@ img {
 
 .no-decoration {
     text-decoration: none;
-    display: inline-block;
-    margin: 0 5px;
+    margin: 0;
 }

@@ -62,6 +62,10 @@ function getQueryParam(parameter) {
     return urlParams.get(parameter);
 }
 
+function removeQueryParams() {
+    window.history.pushState({}, document.title, window.location.pathname);
+}
+
 /**
  * Retrieve current highlighted_diner_id from URL or return null if not specified
  *
@@ -161,6 +165,7 @@ function clearDinerSidePanel() {
  * Remove highlighted class from all map points
  */
 function disablePointsHighlighting() {
+    removeQueryParams()
     let points = document.querySelectorAll(".highlighted")
     points.forEach((point) => {
         point.classList.remove("highlighted")
@@ -193,9 +198,9 @@ function fillSidePanelHeader(headerText) {
     sidePanelCloseButton.className = "side-panel-close-button"
     sidePanelCloseButton.textContent = "✖"
     sidePanelCloseButton.addEventListener("click", () => {
-        clearDinerSidePanel()
-        disablePointsHighlighting()
-        fillEmptySidePanelHeader()
+            clearDinerSidePanel()
+            disablePointsHighlighting()
+            fillEmptySidePanelHeader()
         }
     )
     sidePanelHeader.append(sidePanelCloseButton)
@@ -207,17 +212,18 @@ function fillSidePanelHeader(headerText) {
  *
  * @param dinerID
  * @param dinerName
+ * @param dinerLocationCount
  */
-function fillDinerNetworkSidePanel(dinerID, dinerName) {
+function fillDinerNetworkSidePanel(dinerID, dinerName, dinerLocationCount) {
     clearDinerSidePanel()
 
     let sidePanelBody = document.querySelector(".side-panel-body")
 
     fillSidePanelHeader(dinerName)
 
-    addFullAddress(`Выделены все локации "${dinerName}"`, sidePanelBody)
+    addFullAddress(`Выделены все локации "${dinerName}" (${dinerLocationCount})`, sidePanelBody)
 
-    addOfficialReview(dinerID, true, sidePanelBody)
+    addOfficialReview(dinerID, true, sidePanelBody, null)
 
     document.body.dispatchEvent(updateBodyListenersEvent)
 }
@@ -241,7 +247,7 @@ function fillDinerSidePanel(dinerID, dinerName, coordinates, reviewed, fullAddre
 
     addFullAddress(fullAddress, sidePanelBody)
 
-    addOfficialReview(dinerID, reviewed, sidePanelBody)
+    addOfficialReview(dinerID, reviewed, sidePanelBody, dinerName)
 
     addReviews(placeID, sidePanelBody)
 
@@ -268,18 +274,38 @@ function addFullAddress(fullAddress, sidePanelBody) {
     sidePanelBody.append(sidePanelAddress)
 }
 /**
- * Add official review to sidePanelBody
+ * Add official review and network redirect button to sidePanelBody
  *
  * @param dinerID
  * @param reviewed
  * @param sidePanelBody
+ * @param dinerName
  */
-function addOfficialReview(dinerID, reviewed, sidePanelBody) {
+function addOfficialReview(dinerID, reviewed, sidePanelBody, dinerName) {
     let officialReviewHeader =  document.createElement("div")
+    let officialReviewHeaderText = document.createElement("div")
+
     let officialReview = document.createElement("div")
 
-    officialReviewHeader.textContent = "Наш Обзор"
-    officialReviewHeader.className = "side-panel-subheader"
+    officialReviewHeader.className = "side-panel-review-header"
+
+    officialReviewHeaderText.textContent = "Наш Обзор"
+    officialReviewHeaderText.className = "side-panel-subheader"
+    officialReviewHeader.append(officialReviewHeaderText)
+
+
+    if (dinerName !== null){
+        let officialReviewHeaderNetworkButton = document.createElement("button")
+
+        officialReviewHeaderNetworkButton.className = "official-review-network-button"
+        officialReviewHeaderNetworkButton.textContent = `Показать все ${dinerName}`
+        officialReviewHeaderNetworkButton.addEventListener("click", () => {
+            document.location.href = `/map?highlighted_diner_id=${dinerID}`
+        })
+        officialReviewHeader.append(officialReviewHeaderNetworkButton)
+    }
+
+
 
     let reviewUrl = "/official_review/" + dinerID;
 
@@ -448,7 +474,11 @@ async function setupLyceumBuildings(map, YMapMarker) {
             let placemark = new YMapMarker(
                 {
                     coordinates: prepareCoordinates(lyceum.coordinates),
-                    onFastClick: () => {fillLyceumBuildingSidePanel(id, name, coordinates, fullAddress)}
+                    onFastClick: () => {
+                        disablePointsHighlighting()
+                        markerElement.classList.add("highlighted")
+                        fillLyceumBuildingSidePanel(id, name, coordinates, fullAddress)
+                    }
                 },
                 markerElement
             )
@@ -570,6 +600,7 @@ async function setupDiners(map, YMapMarker) {
     let mapCenter = [0, 0]
     let boundingBox = {}
     let dinerNetworkName = null
+    let dinerLocationCount = 0
     getDiners().then((dinersData) => {
         if (highlightedDinerID != null) {
             switch (mapCenterMode) {
@@ -599,27 +630,33 @@ async function setupDiners(map, YMapMarker) {
             markerElement.className = "marker diner-marker"
             if (reviewed){
                 markerIcon.src = "/static/images/restaurant_colored.png"
-                if (highlightedDinerID === dinerID) {
-                    console.log("highlighting marker", markerElement)
-                    dinerNetworkName = name
-                    markerElement.className += " highlighted"
-                    console.log(markerElement.className)
-                }
             } else {
                 markerIcon.src = "/static/images/restaurant.png"
+            }
+            if (highlightedDinerID === dinerID) {
+                dinerNetworkName = name
+                markerElement.className += " highlighted"
+                dinerLocationCount += 1
             }
 
             markerElement.appendChild(markerIcon)
 
 
-            let placemark = new YMapMarker(
+            let marker = new YMapMarker(
                 {
                     coordinates: prepareCoordinates(coordinates),
-                    onFastClick: () => {fillDinerSidePanel(dinerID, name, coordinates, reviewed, fullAddress, placeID)}
+                    onFastClick: () => {
+                        if (getHighlightedDinerID() !== dinerID) {
+                            disablePointsHighlighting()
+                        }
+                        markerElement.classList.add("highlighted")
+
+                        fillDinerSidePanel(dinerID, name, coordinates, reviewed, fullAddress, placeID)
+                    }
                 },
                 markerElement
             )
-            map.addChild(placemark)
+            map.addChild(marker)
         }
         if (highlightedDinerID != null) {
             switch (mapCenterMode) {
@@ -647,7 +684,7 @@ async function setupDiners(map, YMapMarker) {
             }
 
             animateHighlightedMarkers()
-            fillDinerNetworkSidePanel(highlightedDinerID, dinerNetworkName)
+            fillDinerNetworkSidePanel(highlightedDinerID, dinerNetworkName, dinerLocationCount)
         }
 
     })
@@ -668,6 +705,3 @@ async function init(){
     await setupLyceumBuildings(map, YMapMarker)
     await setupDiners(map, YMapMarker)
 }
-
-
-// TODO add "open all diners from same network" button on diner side panel that works like the one on blog page
