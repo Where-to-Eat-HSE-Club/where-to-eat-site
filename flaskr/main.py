@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response, request, abort
 from json import dumps
+import hashlib
 
 app = Flask(__name__)
 
 lyceum_buildings = [
     {"id": 0, "coordinates": [55.752318, 37.637371], "name": "Лицей на Солянке", "full_address": "Солянка, 14А"},
-    {"id": 1, "coordinates": [55.753164, 37.648106], "name": "Вышка на Покре", "full_address": "Покровский бульвар, 11с10"},
+    {"id": 1, "coordinates": [55.753164, 37.648106], "name": "Вышка на Покре",
+     "full_address": "Покровский бульвар, 11с10"},
     {"id": 2, "coordinates": [55.760825, 37.652278], "name": "Лицей на Ляле", "full_address": "Лялин переулок, 3А"},
-    {"id": 3, "coordinates": [55.763528, 37.643714], "name": "Лицей на БХ", "full_address": "Большой Харитоньевский переулок, 4с1"},
-    {"id": 4, "coordinates": [55.769390, 37.618911], "name": "Лицей на Колобке", "full_address": "3-й Колобовский переулок, 8с2"},
+    {"id": 3, "coordinates": [55.763528, 37.643714], "name": "Лицей на БХ",
+     "full_address": "Большой Харитоньевский переулок, 4с1"},
+    {"id": 4, "coordinates": [55.769390, 37.618911], "name": "Лицей на Колобке",
+     "full_address": "3-й Колобовский переулок, 8с2"},
 ]
 
 lyceum_buildings_areas = [
@@ -82,6 +86,10 @@ posts_dict = [
 
 ]
 
+pass_key_hash = "ddbe7b29ea6025d731132854b72ceca46af449d55482c819561381a92da6aa1ad5e7009e21fe30bb269c71f7d01d4713c0259d720250c0ee1cfa8d4b5f8c9245"
+# TODO put current hash in one place to be accessed both from python and js
+
+
 for i in posts_dict:
     if "body_text" in i:
         i["body_text"] = i["body_text"].replace("\n", "<br>")
@@ -110,6 +118,10 @@ diner_locations = [
 ]
 
 
+def get_sha512_hash(string):
+    return hashlib.sha512(string.encode('utf-8')).hexdigest()
+
+
 @app.route('/')
 def index_page():
     return render_template("index.html")
@@ -123,7 +135,6 @@ def map_page():
 @app.route('/blog')
 def blog_page():
     args = request.args
-    print(args)
     return render_template("blog.html", posts=posts_dict)
 
 
@@ -142,6 +153,15 @@ def get_diners():
     return Response(dumps(diner_locations, default=str), 200, mimetype='application/json')
 
 
+@app.route("/admin")
+def admin_panel():
+    pass_key = request.args.get("passkey")
+    if get_sha512_hash(pass_key) != pass_key_hash:
+        abort(401)
+
+    return render_template("admin.html")
+
+
 @app.route("/lyceum_buildings")
 def get_lyceum_buildings():
     return Response(dumps(lyceum_buildings, default=str), 200, mimetype='application/json')
@@ -154,7 +174,6 @@ def get_lyceum_building_areas(id: int):
     prefix = "<div class='lyceum-areas'>"
     postfix = "</div>"
     for area in lyceums_with_matching_id[0]["areas"]:
-
         icon_path = f"/static/images/areas_icons/{areas_icons[area]}.png"
         html_review_elem = f"""<div class="lyceum-area-item">
 <img src='{icon_path}' alt='{area}'>{area}
@@ -218,4 +237,4 @@ def add_review():
 if __name__ == "__main__":
     # get_address_gps("Верхняя Красносельская ул., 7, стр. 2")
 
-    app.run(host="0.0.0.0", port=80)
+    app.run(host="localhost", port=80)

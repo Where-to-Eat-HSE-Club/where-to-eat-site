@@ -29,13 +29,20 @@ html, body {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
+    flex-direction: row;
     background-color: gainsboro;
     margin: 0;
     color: black;
     font-family: "Arial", serif;
     font-size: 16px;
     padding: 20px 0;
+}
+
+.footer-text-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-content: center;
 }
 
 .header-left {
@@ -67,13 +74,22 @@ img {
     justify-content: center;
     align-items: center;
     font-size: 36px;
-
 }
+
 .nav-button-text {
 }
 
 .nav-button:hover {
     background-color: #d79d08;
+}
+
+.footer-button {
+    font-weight: normal;
+    font-family: "Arial", serif;
+    font-size: 24px;
+}
+.footer-button:hover {
+    background-color: lightgray;
 }
 
 .no-decoration {
