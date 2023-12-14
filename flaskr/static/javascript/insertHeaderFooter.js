@@ -20,8 +20,9 @@ templateHeader.innerHTML = `
 
 templateFooter.innerHTML = `
     <div class="footer">
-        <div> Социальный проект  <a class="no-decoration" href="https://2359.hse.ru/spd/view/222">"Где Поесть?"</a>  © 2023, Лицей НИУ ВШЭ </div>
-        </div>
+        <div class="footer-text-container"><div> Социальный проект  <a class="no-decoration" href="https://2359.hse.ru/spd/view/222">"Где Поесть?"</a>  © 2023, Лицей НИУ ВШЭ </div></div>
+        <button class="nav-button no-decoration footer-button" onclick="promptAuth()"><div class="nav-button-text">Админка</div></button>
+    </div>
 `
 
 // <a href="https://www.flaticon.com/free-icons/school" title="school icons">School icons created by Freepik - Flaticon</a>
