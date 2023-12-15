@@ -3,16 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" href="{{ url_for('static', filename='/images/favicon.ico') }}">
-
+    <script src="../static/javascript/auth.js"> </script>
     <script src="../static/javascript/insertHeaderFooter.js" defer></script>
+    <script src="../static/javascript/deleteFooterAuthButton.js" defer></script>
     <link rel="stylesheet" type="text/css" href="../static/css/common.css" />
-    <link rel="stylesheet" type="text/css" href="../static/css/auth.css" />
+    <link rel="stylesheet" type="text/css" href="../static/css/admin.css" />
 
     <title>Где Поесть? Домашняя Страница</title>
 </head>
 <body>
-    <div class="admin-body">
-      <div class="admin-header">Добро пожаловать на админскую страницу</div>
+    <div class="page-body">
+        <div class="admin-header">Панель Управления</div>
+        <div class="admin-body">
+            <div class="posts-body">
+                <div class="sub-header">
+                    Последние обзоры
+                </div>
+                <div class="control-buttons">
+                    <button class="create-post-button" onclick="alert('Not implemented')">Создать текстовый пост</button>
+                    <button class="create-post-button" onclick="alert('Not implemented')">Создать обзорный пост</button>
+                </div>
+                <div class="posts">
+                    {% for post in posts %}
+                        {% autoescape false %}
+                            <div class="post">
+                                <p class="post-header"> {{ post['name'] }} </p>
+                                <p class="post-info" > Обзор на {{ post['place_name'] }}, Автор: {{ post['author'] }}, Дата написания: {{ post['creation_date'] }}</p>
+                                <p class="post-body"> {{ post['body_text'] }} </p>
+                                <div class="blog-redirect-button-container"><button class="redirect-button" onclick="redirectToMap({{ post['diner_id'] }})">Показать на карте</button></div>
+                            </div>
+                        {% endautoescape %}
+                    {% endfor %}
+
+                </div>
+            </div>
+            <div class="places-body">
+                <div class="sub-header">
+                    Точки на карте
+                </div>
+                <div class="diner-locations">
+                    {% for diner_location in diners %}
+                        {% autoescape false %}
+                            <div class="diner-location">
+                                {{ diner_location }}
+                            </div>
+                        {% endautoescape %}
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
     </div>
+    <script>
+        function redirectToMap(dinerID) {
+            console.log(dinerID)
+            window.location.href = "/map?highlighted_diner_id=" + dinerID;
+        }
+    </script>
 </body>
 </html>

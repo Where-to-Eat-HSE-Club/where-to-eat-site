@@ -1,0 +1,120 @@
+.page-body {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+}
+
+.admin-header {
+    text-align: center;
+    font-size: 60px;
+    font-weight: bold;
+    font-family: "CirceBold", sans-serif;
+    margin: 10px 0;
+}
+
+.admin-body {
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+    /*flex: 1;*/
+    /*justify-content: center;*/
+    /*align-items: center;*/
+}
+.posts-body {
+    display: flex;
+    flex-direction: column;
+    flex: 2;
+}
+.post-body {
+    display: flex;
+    flex: 1;
+}
+
+.places-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.sub-header {
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    font-family: "CirceBold", sans-serif;
+    margin: 10px 0;
+}
+
+.diner-places {
+    width: 600px;
+}
+
+.posts {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post {
+    background-color: #cccccc;
+    padding: 10px 20px;
+    border-color: black;
+    border-radius: 20px;
+    border-style: solid;
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+.post-header {
+    text-align: center;
+    font-size: 28px;
+    margin: 10px;
+    font-weight: bold;
+}
+.post-info {
+    color: grey;
+    text-align: right;
+}
+.blog-redirect-button-container {
+    display: flex;
+    justify-content: end;
+    flex-direction: row;
+    align-items: center;
+}
+
+.redirect-button {
+    font-family: "Verdana", sans-serif;
+    padding: 10px;
+    font-size: 24px;
+}
+
+.control-buttons {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.create-post-button {
+    font-family: "Verdana", sans-serif;
+    padding: 10px;
+    font-size: 24px;
+}
+.diner-locations {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+}
+.diner-location {
+    background-color: #cccccc;
+    padding: 10px 20px;
+    border-color: black;
+    border-radius: 20px;
+    border-style: solid;
+    font-size: 16px;
+    line-height: 1.3;
+}

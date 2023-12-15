@@ -159,7 +159,7 @@ def admin_panel():
     if get_sha512_hash(pass_key) != pass_key_hash:
         abort(401)
 
-    return render_template("admin.html")
+    return render_template("admin.html", posts=posts_dict, diners=diner_locations)
 
 
 @app.route("/lyceum_buildings")

@@ -8,6 +8,8 @@ function sha512(str) {
 
 function promptAuth() {
     let authCode = window.prompt("Введите код авторизации")
+    if (authCode === "" || authCode == null) return;
+
     sha512(authCode).then(authCodeHash => {
         console.log(authCode)
         console.log(authCodeHash)

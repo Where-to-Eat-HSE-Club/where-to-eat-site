@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,9 +6,12 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='/images/favicon.ico') }}">
 
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+    <script src="../static/javascript/auth.js"> </script>
     <script src="../static/javascript/insertHeaderFooter.js" defer></script>
 
     <script src="https://api-maps.yandex.ru/v3/?apikey=89716fda-109b-4fc7-b077-5cb9d24154f2&lang=ru_RU" type="text/javascript"></script>
+
     <script src="../static/javascript/map.js"></script>
 
     <script>
@@ -19,8 +21,6 @@
     <link rel="stylesheet" type="text/css" href="../static/css/common.css" />
     <link rel="stylesheet" type="text/css" href="../static/css/map.css" />
     <link rel="stylesheet" type="text/css" href="../static/css/map_side_panel.css" />
-
-
 
     <title>Где Поесть? Яндекс карта</title>
 </head>
@@ -42,16 +42,13 @@
     </div>
 
     <script defer>
-        console.log("Adding events")
-
         document.body.addEventListener('htmx:load', function (evt) {
             htmx.logAll();
-        });
+        })
 
         document.body.addEventListener('updateBodyListeners', function (evt) {
             htmx.process(document.body)
-        });
-
+        })
     </script>
 
 </body>
